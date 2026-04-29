@@ -6,33 +6,33 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#FAFAFA",
-  "theme_color": "#0A0A0A",
+  "background_color": "#0D0520",
+  "theme_color": "#1E0A4E",
   "lang": "ru",
   "icons": [
     {
       "src": "apple-touch-icon.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "apple-touch-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='44' fill='%230A0A0A'/><text x='50%25' y='56%25' font-family='-apple-system,SF Pro Display,Inter,sans-serif' font-size='72' font-weight='800' fill='white' text-anchor='middle' dominant-baseline='middle'>BM</text></svg>",
-      "sizes": "192x192",
+      "src": "logo.svg",
+      "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='118' fill='%230A0A0A'/><text x='50%25' y='56%25' font-family='-apple-system,SF Pro Display,Inter,sans-serif' font-size='190' font-weight='800' fill='white' text-anchor='middle' dominant-baseline='middle'>BM</text></svg>",
-      "sizes": "512x512",
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><defs><radialGradient id='bg' cx='50%25' cy='45%25' r='65%25'><stop offset='0%25' stop-color='%233D1F7A'/><stop offset='100%25' stop-color='%230D0520'/></radialGradient><linearGradient id='wg' x1='20%25' y1='0%25' x2='80%25' y2='100%25'><stop offset='0%25' stop-color='%23C8B4ED'/><stop offset='100%25' stop-color='%238B6BD8'/></linearGradient></defs><rect width='200' height='200' rx='46' fill='url(%23bg)'/><path d='M99,92 C92,70 72,38 42,28 C18,20 5,44 16,64 C26,80 60,84 86,92 Z' fill='url(%23wg)' stroke='%23D6C6F4' stroke-width='1.4' opacity='0.93'/><path d='M101,92 C108,70 128,38 158,28 C182,20 195,44 184,64 C174,80 140,84 114,92 Z' fill='url(%23wg)' stroke='%23D6C6F4' stroke-width='1.4' opacity='0.93'/><path d='M99,100 C82,98 52,102 36,120 C22,134 32,157 54,153 C74,149 90,134 99,116 Z' fill='url(%23wg)' stroke='%23D6C6F4' stroke-width='1.4' opacity='0.86'/><path d='M101,100 C118,98 148,102 164,120 C178,134 168,157 146,153 C126,149 110,134 101,116 Z' fill='url(%23wg)' stroke='%23D6C6F4' stroke-width='1.4' opacity='0.86'/><ellipse cx='100' cy='106' rx='3.5' ry='18' fill='%236B50C0' opacity='0.9'/></svg>",
+      "sizes": "200x200",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     }
   ]
 }

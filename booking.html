@@ -4,6 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0A0A0A" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="apple-touch-icon-512.png">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BookMe" />
   <title>BookMe — запись</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -92,8 +98,12 @@
       document.getElementById('back').href     = backUrl;
       document.getElementById('back-link').href = backUrl;
 
-      const { data: master }  = await sb.from('masters').select('*, profiles(name)').eq('username', username).single();
-      const { data: service } = await sb.from('services').select('*').eq('id', serviceId).single();
+      // Load master + service + session in parallel
+      const [{ data: master }, { data: service }, session] = await Promise.all([
+        sb.from('masters').select('*, profiles(name)').eq('username', username).single(),
+        sb.from('services').select('*').eq('id', serviceId).single(),
+        getSession(),
+      ]);
 
       if (!master || !service) { location.href = backUrl; return; }
 
@@ -126,10 +136,11 @@
       let selectedTime = null;
 
       async function renderTimes() {
-        timesEl.innerHTML = '';
+        timesEl.innerHTML = '<div class="spinner-center"><div class="spinner"></div></div>';
         selectedTime = null;
         const { data: booked = [] } = await sb.from('bookings')
           .select('time').eq('master_id', master.id).eq('date_iso', selectedDate.iso).eq('status', 'upcoming');
+        timesEl.innerHTML = '';
         const busySet = new Set(booked.map(b => b.time));
         for (let h = 9; h <= 19; h++) {
           for (const m of [0, 30]) {
@@ -164,8 +175,7 @@
         phone.value = out;
       });
 
-      // Pre-fill from session
-      const session = await getSession();
+      // Pre-fill from session (loaded in parallel above)
       if (session) {
         const p = await getProfile(session.user.id);
         if (p) { document.getElementById('c-name').value = p.name||''; document.getElementById('c-email').value = p.email||''; }
@@ -173,7 +183,8 @@
 
       // Confirm booking
       let lastBooking = null;
-      document.getElementById('confirm-btn').addEventListener('click', async () => {
+      const confirmBtn = document.getElementById('confirm-btn');
+      confirmBtn.addEventListener('click', async () => {
         const clientName  = document.getElementById('c-name').value.trim();
         const clientPhone = phone.value.trim();
         const clientEmail = document.getElementById('c-email').value.trim();
@@ -181,6 +192,17 @@
         if (!selectedTime)  { toast('Выберите время'); return; }
         if (!clientName)    { toast('Укажите имя');    return; }
         if (clientPhone.replace(/\D/g,'').length < 11) { toast('Укажите корректный телефон'); return; }
+        confirmBtn.disabled = true; confirmBtn.textContent = 'Подтверждаем…';
+
+        // Race-condition guard: re-verify slot is still free
+        const { data: taken } = await sb.from('bookings')
+          .select('id').eq('master_id', master.id)
+          .eq('date_iso', selectedDate.iso).eq('time', selectedTime)
+          .neq('status', 'cancelled').maybeSingle();
+        if (taken) {
+          toast('Это время только что заняли. Выберите другое.');
+          await renderTimes(); return;
+        }
 
         const { data, error } = await sb.from('bookings').insert({
           master_id:        master.id,
@@ -197,7 +219,16 @@
           status:           'upcoming',
         }).select().single();
 
-        if (error) { toast('Ошибка: ' + error.message); return; }
+        if (error) {
+          confirmBtn.disabled = false; confirmBtn.textContent = 'Подтвердить запись';
+          if (error.code === '23505') {
+            toast('Это время только что заняли. Выберите другое.');
+            await renderTimes();
+          } else {
+            toast('Ошибка: ' + error.message);
+          }
+          return;
+        }
         lastBooking = data;
 
         document.querySelectorAll('#steps .step-dot').forEach(d => d.classList.add('done'));

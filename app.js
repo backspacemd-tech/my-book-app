@@ -2,6 +2,16 @@
    BookMe — shared utilities (loaded after config.js)
    ============================================================ */
 
+// ── Global error boundary ─────────────────────────────────────
+window.addEventListener('unhandledrejection', e => {
+  const msg = e.reason?.message || String(e.reason);
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+    toast('Нет соединения. Проверьте интернет.'); return;
+  }
+  console.error('[BookMe]', e.reason);
+});
+window.onerror = (msg, _src, _l, _c, err) => { console.error('[BookMe]', err || msg); };
+
 // ── Format helpers ───────────────────────────────────────────
 function fmt$(n) { return '$' + (n || 0).toLocaleString('en-US'); }
 
@@ -97,21 +107,35 @@ function redirectByRole(role) {
 
 // Guard: ensure session, return {session, profile}. Redirects if not authenticated.
 async function requireAuth(expectedRole = null) {
-  const session = await getSession();
+  let session;
+  try { session = await getSession(); } catch { session = null; }
   if (!session) { window.location.href = 'index.html'; return null; }
 
-  const profile = await ensureProfile(session.user, {
-    email: session.user.email,
-    name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || undefined,
-  });
+  let profile;
+  try {
+    profile = await ensureProfile(session.user, {
+      email: session.user.email,
+      name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || undefined,
+    });
+  } catch (e) {
+    console.error('Profile load failed', e);
+    window.location.href = 'index.html'; return null;
+  }
   if (!profile) { window.location.href = 'index.html'; return null; }
 
-  // If wrong role (and not admin), redirect to correct dashboard
   if (expectedRole && profile.role !== expectedRole && profile.role !== 'admin') {
-    redirectByRole(profile.role);
-    return null;
+    redirectByRole(profile.role); return null;
   }
   return { session, profile };
+}
+
+// ── Cancel booking helper ─────────────────────────────────────
+async function cancelBooking(id, { onDone } = {}) {
+  const { error } = await sb.from('bookings').update({ status: 'cancelled' }).eq('id', id);
+  if (error) { toast('Ошибка отмены: ' + error.message); return false; }
+  toast('Запись отменена', { icon: '✓' });
+  if (onDone) onDone();
+  return true;
 }
 
 async function navigateTo(url) {
@@ -394,6 +418,27 @@ function mockAIResponse(message, profile, bookings, services = []) {
   ];
   return fb[Math.floor(Math.random()*fb.length)];
 }
+
+// ── In-memory cache with TTL ──────────────────────────────────
+const _cache = new Map();
+function getCached(key, fetcher, ttl = 30_000) {
+  const hit = _cache.get(key);
+  if (hit && Date.now() - hit.ts < ttl) return Promise.resolve(hit.data);
+  return fetcher().then(data => { _cache.set(key, { data, ts: Date.now() }); return data; });
+}
+function invalidateCache(...keys) { keys.forEach(k => _cache.delete(k)); }
+
+// ── Skeleton helpers ──────────────────────────────────────────
+function skCard(lines = 2) {
+  const lineHtml = Array.from({ length: lines }, (_, i) =>
+    `<span class="sk sk-text" style="width:${i === 0 ? '65%' : '45%'};margin-top:${i ? '8px' : '0'};display:block;"></span>`
+  ).join('');
+  return `<div class="sk-card">
+    <span class="sk sk-avatar" style="width:48px;height:48px;flex-shrink:0;"></span>
+    <div style="flex:1;">${lineHtml}</div>
+  </div>`;
+}
+function skCards(n = 3) { return Array.from({ length: n }, () => skCard()).join(''); }
 
 // ── Supabase Storage upload helper ───────────────────────────
 async function uploadFile(bucket, path, file) {

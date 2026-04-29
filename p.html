@@ -107,12 +107,17 @@
       }
       if (!master.accepts_online) document.getElementById('online-badge').hidden = true;
 
-      // Load services
-      const { data: services = [] } = await sb.from('services').select('*').eq('master_id', master.id).order('price');
-
+      // Show skeleton while services load
       const servicesEl = document.getElementById('services');
       const bookBtn    = document.getElementById('book-btn');
       let selectedId   = null;
+      servicesEl.innerHTML = skCards(3);
+
+      // Load services + reviews in parallel
+      const [{ data: services = [] }, { data: reviews = [] }] = await Promise.all([
+        sb.from('services').select('*').eq('master_id', master.id).order('price'),
+        sb.from('reviews').select('*').eq('master_id', master.id).order('created_at', { ascending: false }).limit(10),
+      ]);
 
       if (!services.length) {
         servicesEl.innerHTML = `<div class="empty"><div class="empty-icon">✦</div><h4>Услуги не добавлены</h4><p>Мастер пока не настроил прайс-лист</p></div>`;
@@ -137,8 +142,6 @@
         });
       }
 
-      // Load reviews
-      const { data: reviews = [] } = await sb.from('reviews').select('*').eq('master_id', master.id).order('created_at', { ascending: false }).limit(10);
       if (reviews.length) {
         document.getElementById('reviews-section').hidden = false;
         document.getElementById('reviews-summary').textContent = master.rating > 0 ? `${master.rating.toFixed(1)} из 5` : '';

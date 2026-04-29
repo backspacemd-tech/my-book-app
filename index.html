@@ -15,10 +15,13 @@
 </head>
 <body>
   <div class="auth-wrap">
-    <div class="auth-logo" style="font-size:30px;font-weight:800;letter-spacing:-0.04em;margin-bottom:4px;">
-      Book<span style="color:var(--rose);">Me</span>
+    <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:28px;">
+      <img src="logo.svg" alt="BookMe"
+           style="width:64px;height:64px;border-radius:16px;margin-bottom:8px;"
+           onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='flex'" />
+      <div id="logo-fallback" class="auth-logo" style="display:none;margin-bottom:14px;">BM</div>
+      <p class="muted" style="text-align:center;font-size:14px;margin:0;">Онлайн-запись для мастеров и клиентов</p>
     </div>
-    <p class="muted" style="text-align:center;font-size:14px;margin:0 0 28px;">Онлайн-запись для мастеров и клиентов</p>
 
     <div class="auth-tabs">
       <div class="auth-tab active" id="tab-login">Вход</div>
@@ -100,13 +103,13 @@
     </div>
 
     <!-- Social proof -->
-    <div style="display:flex;align-items:center;gap:10px;margin-top:20px;justify-content:center;">
-      <div style="display:flex;">
-        <div class="mini-avatar gradient" style="width:26px;height:26px;font-size:11px;">А</div>
-        <div class="mini-avatar gradient" style="width:26px;height:26px;font-size:11px;margin-left:-6px;">М</div>
-        <div class="mini-avatar gradient" style="width:26px;height:26px;font-size:11px;margin-left:-6px;">С</div>
+    <div class="social-proof">
+      <div class="stack">
+        <div>А</div>
+        <div>М</div>
+        <div>С</div>
       </div>
-      <span class="muted" style="font-size:13px;">Более <strong style="color:var(--text);">2 400</strong> мастеров в BookMe</span>
+      <p>Более <strong>2 400</strong> мастеров в BookMe</p>
     </div>
   </div>
 

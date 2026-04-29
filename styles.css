@@ -1949,3 +1949,69 @@ body.page-exit .auth-wrap {
   pointer-events: none;
 }
 .public-topbar > * { pointer-events: auto; }
+
+/* ============= Skeleton loaders ============= */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.sk {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 6px;
+  display: block;
+}
+.sk-text   { height: 13px; }
+.sk-title  { height: 17px; }
+.sk-lg     { height: 26px; border-radius: 8px; }
+.sk-avatar { border-radius: 50%; }
+.sk-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.sk-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 16px;
+}
+
+/* Spinner (small, inline) */
+.spinner {
+  display: inline-block;
+  width: 20px; height: 20px;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--text);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+.spinner-center {
+  display: flex;
+  justify-content: center;
+  padding: 28px 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Pull-to-refresh indicator */
+.refresh-toast {
+  position: fixed;
+  top: calc(var(--safe-top) + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-60px);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 50;
+  transition: transform .25s var(--ease);
+  pointer-events: none;
+}
+.refresh-toast.show { transform: translateX(-50%) translateY(0); }

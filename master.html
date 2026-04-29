@@ -117,26 +117,50 @@
       }
 
       // Load bookings
+      // ── Render function (used for initial load + realtime updates) ──
+      const days7 = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+      function renderDashboard(bookings) {
+        const stats = calcStats(bookings);
+        document.getElementById('today-count').textContent    = stats.todayCount;
+        document.getElementById('upcoming-count').textContent = stats.upcomingCount;
+        document.getElementById('revenue').textContent        = fmt$(stats.revenue7);
+        document.getElementById('revenue-trend').textContent  = stats.revenue7 > 0 ? `${fmt$(stats.revenue7)} за 7 дней` : 'нет записей';
+        document.getElementById('total-bookings').textContent = bookings.length;
+        document.getElementById('total-trend').textContent    = bookings.length ? `${bookings.length} клиентов` : 'за всё время';
+
+        const maxC = Math.max(1, ...stats.weekData.map(d => d.count));
+        document.getElementById('barchart').innerHTML = stats.weekData.map(d => {
+          const dt = new Date(d.iso);
+          const h = Math.max(6, Math.round((d.count / maxC) * 100));
+          return `<div class="bar ${d.count === 0 ? 'muted' : ''}" style="height:${h}%"><span class="label">${days7[dt.getDay()]}</span></div>`;
+        }).join('');
+        document.getElementById('week-total').textContent = `${stats.weekData.reduce((s,d) => s+d.count,0)} за неделю`;
+
+        const todayB = bookingsByDate(bookings, 'today');
+        const todayList = document.getElementById('today-list');
+        if (!todayB.length) {
+          todayList.innerHTML = `<div class="empty"><div class="empty-icon">☕</div><h4>Сегодня свободно</h4><p>Поделитесь ссылкой — клиенты запишутся сами</p></div>`;
+        } else {
+          todayList.innerHTML = todayB.map(b => `
+            <div class="row-item">
+              <div class="mini-avatar gradient">${(b.client_name||'?').charAt(0)}</div>
+              <div class="meta"><div class="title">${b.client_name}</div><div class="sub">${b.service_name}</div></div>
+              <div class="meta" style="text-align:right;flex:0 0 auto;">
+                <div class="title" style="font-size:14px;">${b.time}</div>
+                <span class="chip-status today">сегодня</span>
+              </div>
+            </div>`).join('');
+        }
+        renderMasterTabBar('home', { bookings: stats.todayCount || '' });
+      }
+
+      // Show skeleton while data loads
+      document.getElementById('today-list').innerHTML = skCards(2);
+
+      // Load bookings + render
       const { data: bookings = [] } = await sb.from('bookings')
         .select('*').eq('master_id', profile.id).eq('status', 'upcoming');
-      const stats = calcStats(bookings);
-
-      document.getElementById('today-count').textContent    = stats.todayCount;
-      document.getElementById('upcoming-count').textContent = stats.upcomingCount;
-      document.getElementById('revenue').textContent        = fmt$(stats.revenue7);
-      document.getElementById('revenue-trend').textContent  = stats.revenue7 > 0 ? `${fmt$(stats.revenue7)} за 7 дней` : 'нет записей';
-      document.getElementById('total-bookings').textContent = bookings.length;
-      document.getElementById('total-trend').textContent    = bookings.length ? `${bookings.length} клиентов` : 'за всё время';
-
-      // Bar chart
-      const days7 = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-      const maxC = Math.max(1, ...stats.weekData.map(d => d.count));
-      document.getElementById('barchart').innerHTML = stats.weekData.map(d => {
-        const dt = new Date(d.iso);
-        const h = Math.max(6, Math.round((d.count / maxC) * 100));
-        return `<div class="bar ${d.count === 0 ? 'muted' : ''}" style="height:${h}%"><span class="label">${days7[dt.getDay()]}</span></div>`;
-      }).join('');
-      document.getElementById('week-total').textContent = `${stats.weekData.reduce((s,d) => s+d.count,0)} за неделю`;
+      renderDashboard(bookings);
 
       // Public link
       const username = master?.username || profile.id;
@@ -156,31 +180,17 @@
         }
       });
 
-      // Today's bookings
-      const todayB = bookingsByDate(bookings, 'today');
-      const todayList = document.getElementById('today-list');
-      if (!todayB.length) {
-        todayList.innerHTML = `<div class="empty"><div class="empty-icon">☕</div><h4>Сегодня свободно</h4><p>Поделитесь ссылкой — клиенты запишутся сами</p></div>`;
-      } else {
-        todayList.innerHTML = todayB.map(b => `
-          <div class="row-item">
-            <div class="mini-avatar gradient">${b.client_name.charAt(0)}</div>
-            <div class="meta"><div class="title">${b.client_name}</div><div class="sub">${b.service_name}</div></div>
-            <div class="meta" style="text-align:right;flex:0 0 auto;">
-              <div class="title" style="font-size:14px;">${b.time}</div>
-              <span class="chip-status today">сегодня</span>
-            </div>
-          </div>`).join('');
-      }
-
-      // Realtime subscription
+      // Realtime: update DOM in-place — no page reload
       sb.channel('master-home-bookings')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings', filter: `master_id=eq.${profile.id}` },
-          () => location.reload())
+          async () => {
+            const { data: updated = [] } = await sb.from('bookings')
+              .select('*').eq('master_id', profile.id).eq('status', 'upcoming');
+            renderDashboard(updated);
+          })
         .subscribe();
 
       document.getElementById('logout-btn').addEventListener('click', signOut);
-      renderMasterTabBar('home', { bookings: stats.todayCount || '' });
     })();
   </script>
 </body>
