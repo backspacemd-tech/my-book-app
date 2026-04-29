@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0A0A0A" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="apple-touch-icon-512.png">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BookMe" />
+  <title>BookMe — ИИ-ассистент</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app no-nav" style="display:flex;flex-direction:column;height:100dvh;padding-bottom:0;">
+    <header class="topbar" style="flex-shrink:0;">
+      <a class="icon-btn-circle" href="master.html" aria-label="Назад">←</a>
+      <h1>ИИ-ассистент</h1>
+      <button class="icon-btn-circle" id="clear-btn" title="Очистить" aria-label="Очистить">⌫</button>
+    </header>
+
+    <!-- Pro gate -->
+    <div id="pro-gate" class="chat-wrap" hidden>
+      <div class="pro-gate">
+        <div class="pro-gate-icon">✦</div>
+        <h3>ИИ-ассистент — Pro</h3>
+        <p>Анализ записей, советы по бизнесу, ответы на вопросы о вашем прайсе и клиентах. Доступно с тарифом Pro или Studio.</p>
+        <a class="btn btn-primary" href="subscription.html" style="max-width:280px;">Обновить до Pro — $12/мес</a>
+        <div style="height:12px;"></div>
+        <a class="btn btn-secondary" href="master.html" style="max-width:280px;">На главную</a>
+      </div>
+    </div>
+
+    <!-- Chat UI -->
+    <div id="chat-ui" class="chat-wrap" hidden>
+      <div class="chat-suggestions" id="suggestions">
+        <div class="chat-suggestion-chip">Сколько записей на неделе?</div>
+        <div class="chat-suggestion-chip">Совет по бизнесу</div>
+        <div class="chat-suggestion-chip">Выручка за 7 дней</div>
+        <div class="chat-suggestion-chip">Топ-услуга</div>
+        <div class="chat-suggestion-chip">Мой тариф</div>
+      </div>
+      <div class="chat-messages" id="messages"></div>
+      <div class="chat-input-bar">
+        <textarea id="chat-input" rows="1" placeholder="Напишите вопрос…"></textarea>
+        <button class="chat-send-btn" id="send-btn" disabled>↑</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script>
+    const CHAT_KEY = 'bookme_chat';
+    let _profile, _bookings = [], _services = [];
+
+    (async () => {
+      const auth = await requireAuth('master');
+      if (!auth) return;
+      _profile = auth.profile;
+
+      const { data: master } = await sb.from('masters').select('plan').eq('id', _profile.id).single();
+      const isPro = master?.plan === 'pro' || master?.plan === 'studio';
+
+      if (isPro) {
+        document.getElementById('chat-ui').hidden = false;
+        const [{ data: bookings }, { data: services }] = await Promise.all([
+          sb.from('bookings').select('*').eq('master_id', _profile.id).neq('status','cancelled'),
+          sb.from('services').select('*').eq('master_id', _profile.id),
+        ]);
+        _bookings  = bookings  || [];
+        _services  = services  || [];
+        initChat();
+      } else {
+        document.getElementById('pro-gate').hidden = false;
+      }
+    })();
+
+    function initChat() {
+      let history = JSON.parse(localStorage.getItem(CHAT_KEY) || '[]');
+      const messagesEl = document.getElementById('messages');
+      const inputEl    = document.getElementById('chat-input');
+      const sendBtn    = document.getElementById('send-btn');
+
+      function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+      function nowTime()  { return new Date().toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' }); }
+
+      function renderMessages() {
+        messagesEl.innerHTML = history.map(m => `
+          <div>
+            <div class="chat-bubble ${m.role}">${escHtml(m.text)}</div>
+            <div class="chat-meta ${m.role==='user'?'right':''}">${m.time}</div>
+          </div>`).join('');
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      if (!history.length) {
+        history.push({ role:'ai', text:`Привет, ${_profile.name||'мастер'}! 👋 Я ваш персональный ИИ-ассистент. Спрашивайте о записях, выручке или попросите бизнес-совет!`, time:nowTime() });
+        localStorage.setItem(CHAT_KEY, JSON.stringify(history));
+      }
+      renderMessages();
+
+      function send(text) {
+        if (!text.trim()) return;
+        history.push({ role:'user', text:text.trim(), time:nowTime() });
+        localStorage.setItem(CHAT_KEY, JSON.stringify(history));
+        inputEl.value = ''; sendBtn.disabled = true;
+        document.getElementById('suggestions').style.display = 'none';
+        renderMessages();
+
+        const typing = document.createElement('div');
+        typing.id = 'typing'; typing.className = 'chat-bubble ai typing';
+        typing.innerHTML = '<span></span><span></span><span></span>';
+        messagesEl.appendChild(typing); messagesEl.scrollTop = messagesEl.scrollHeight;
+
+        setTimeout(() => {
+          typing.remove();
+          const reply = mockAIResponse(text, _profile, _bookings, _services);
+          history.push({ role:'ai', text:reply, time:nowTime() });
+          localStorage.setItem(CHAT_KEY, JSON.stringify(history));
+          renderMessages();
+        }, 600 + Math.random() * 800);
+      }
+
+      function autoResize() { inputEl.style.height='auto'; inputEl.style.height=Math.min(inputEl.scrollHeight,100)+'px'; }
+      inputEl.addEventListener('input', () => { sendBtn.disabled=!inputEl.value.trim(); autoResize(); });
+      inputEl.addEventListener('keydown', e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(!sendBtn.disabled)send(inputEl.value);} });
+      sendBtn.addEventListener('click', () => send(inputEl.value));
+      document.querySelectorAll('.chat-suggestion-chip').forEach(c => c.addEventListener('click', () => send(c.textContent)));
+
+      document.getElementById('clear-btn').addEventListener('click', () => {
+        openSheet(`<h3>Очистить чат?</h3><p class="muted" style="font-size:14px;margin:0 0 16px;">История переписки будет удалена.</p>
+          <div class="btn-row"><button class="btn btn-secondary" onclick="closeSheet()">Отмена</button><button class="btn btn-danger" id="cc">Очистить</button></div>`);
+        document.getElementById('cc').addEventListener('click', () => {
+          history = []; localStorage.setItem(CHAT_KEY, '[]');
+          renderMessages(); document.getElementById('suggestions').style.display='flex'; closeSheet();
+        });
+      });
+    }
+  </script>
+</body>
+</html>

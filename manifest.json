@@ -1,0 +1,38 @@
+{
+  "name": "BookMe — онлайн-запись",
+  "short_name": "BookMe",
+  "description": "Онлайн-запись для мастеров и клиентов",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAFAFA",
+  "theme_color": "#0A0A0A",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "apple-touch-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='44' fill='%230A0A0A'/><text x='50%25' y='56%25' font-family='-apple-system,SF Pro Display,Inter,sans-serif' font-size='72' font-weight='800' fill='white' text-anchor='middle' dominant-baseline='middle'>BM</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='118' fill='%230A0A0A'/><text x='50%25' y='56%25' font-family='-apple-system,SF Pro Display,Inter,sans-serif' font-size='190' font-weight='800' fill='white' text-anchor='middle' dominant-baseline='middle'>BM</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

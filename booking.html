@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0A0A0A" />
+  <title>BookMe — запись</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="public">
+    <header class="topbar">
+      <a class="icon-btn-circle" id="back" href="#" aria-label="Назад">←</a>
+      <h1 id="title">Дата и время</h1>
+      <span class="right-spacer"></span>
+    </header>
+
+    <div class="steps" id="steps">
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot"></div>
+    </div>
+
+    <!-- Form view -->
+    <div id="form-view">
+      <section class="section" style="margin-top:0;">
+        <h3 class="section-title" style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 4px 10px;font-weight:600;">Услуга</h3>
+        <div class="row-item">
+          <div class="meta"><div class="title" id="s-name">—</div><div class="sub" id="s-duration">—</div></div>
+          <div class="price" id="s-price">—</div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3 class="section-title" style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 4px 10px;font-weight:600;">Дата</h3>
+        <div class="chips" id="dates"></div>
+      </section>
+
+      <section class="section">
+        <h3 class="section-title" style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 4px 10px;font-weight:600;">Свободное время</h3>
+        <div class="time-grid" id="times"></div>
+      </section>
+
+      <section class="section">
+        <h3 class="section-title" style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 4px 10px;font-weight:600;">Ваши данные</h3>
+        <div class="card">
+          <div class="field"><label for="c-name">Имя</label><input id="c-name" type="text" placeholder="Как к вам обращаться" autocomplete="name" /></div>
+          <div class="field"><label for="c-phone">Телефон</label><input id="c-phone" type="tel" placeholder="+7 (___) ___-__-__" autocomplete="tel" /></div>
+          <div class="field" style="margin-bottom:0;"><label for="c-email">Email (необязательно)</label><input id="c-email" type="email" placeholder="для напоминания" autocomplete="email" /></div>
+        </div>
+      </section>
+
+      <div class="sticky-cta">
+        <button class="btn btn-primary" id="confirm-btn">Подтвердить запись</button>
+      </div>
+    </div>
+
+    <!-- Success view -->
+    <div id="success-view" hidden>
+      <div class="success">
+        <div class="success-icon">✓</div>
+        <h2>Запись подтверждена</h2>
+        <p>Мы напомним о визите за час</p>
+      </div>
+      <div class="section">
+        <div class="card">
+          <div class="flex-between" style="padding-bottom:12px;border-bottom:1px solid var(--border);"><span class="muted" style="font-size:13px;">Услуга</span><span style="font-weight:600;font-size:14px;" id="r-service">—</span></div>
+          <div class="flex-between" style="padding:12px 0;border-bottom:1px solid var(--border);"><span class="muted" style="font-size:13px;">Когда</span><span style="font-weight:600;font-size:14px;" id="r-when">—</span></div>
+          <div class="flex-between" style="padding:12px 0;border-bottom:1px solid var(--border);"><span class="muted" style="font-size:13px;">Клиент</span><span style="font-weight:600;font-size:14px;" id="r-client">—</span></div>
+          <div class="flex-between" style="padding-top:12px;"><span class="muted" style="font-size:13px;">К оплате</span><span style="font-weight:700;font-size:16px;" id="r-price">—</span></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="btn-row">
+          <a class="btn btn-secondary" id="back-link">Готово</a>
+          <button class="btn btn-primary" id="add-calendar">+ В календарь</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script>
+    (async () => {
+      const params    = new URLSearchParams(location.search);
+      const username  = params.get('u');
+      const serviceId = params.get('s');
+      const backUrl   = `p.html?u=${encodeURIComponent(username)}`;
+
+      document.getElementById('back').href     = backUrl;
+      document.getElementById('back-link').href = backUrl;
+
+      const { data: master }  = await sb.from('masters').select('*, profiles(name)').eq('username', username).single();
+      const { data: service } = await sb.from('services').select('*').eq('id', serviceId).single();
+
+      if (!master || !service) { location.href = backUrl; return; }
+
+      document.getElementById('s-name').textContent     = service.name;
+      document.getElementById('s-duration').textContent = service.duration + ' мин';
+      document.getElementById('s-price').textContent    = fmt$(service.price);
+
+      // Date chips
+      const datesEl = document.getElementById('dates');
+      const days7   = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+      let selectedDate = null;
+
+      for (let i = 0; i < 14; i++) {
+        const d = new Date(); d.setDate(d.getDate() + i);
+        const chip = document.createElement('div');
+        chip.className    = 'chip';
+        chip.dataset.iso  = d.toISOString().slice(0,10);
+        chip.innerHTML    = `<div class="day">${i===0?'СЕГ':i===1?'ЗАВ':days7[d.getDay()]}</div><div class="num">${d.getDate()}</div>`;
+        chip.addEventListener('click', () => {
+          datesEl.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          selectedDate = { iso: chip.dataset.iso, d, label: i===0?'Сегодня':i===1?'Завтра':fmtDate(d) };
+          renderTimes();
+        });
+        datesEl.appendChild(chip);
+      }
+
+      // Time slots
+      const timesEl = document.getElementById('times');
+      let selectedTime = null;
+
+      async function renderTimes() {
+        timesEl.innerHTML = '';
+        selectedTime = null;
+        const { data: booked = [] } = await sb.from('bookings')
+          .select('time').eq('master_id', master.id).eq('date_iso', selectedDate.iso).eq('status', 'upcoming');
+        const busySet = new Set(booked.map(b => b.time));
+        for (let h = 9; h <= 19; h++) {
+          for (const m of [0, 30]) {
+            if (h === 19 && m === 30) continue;
+            const t    = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+            const slot = document.createElement('div');
+            slot.className   = 'time-slot' + (busySet.has(t) ? ' disabled' : '');
+            slot.textContent = t;
+            slot.addEventListener('click', () => {
+              if (busySet.has(t)) return;
+              timesEl.querySelectorAll('.time-slot').forEach(s => s.classList.remove('active'));
+              slot.classList.add('active');
+              selectedTime = t;
+            });
+            timesEl.appendChild(slot);
+          }
+        }
+      }
+      datesEl.firstChild.click();
+
+      // Phone mask
+      const phone = document.getElementById('c-phone');
+      phone.addEventListener('input', () => {
+        let v = phone.value.replace(/\D/g,'').slice(0,11);
+        if (v.startsWith('8')) v = '7'+v.slice(1);
+        if (!v.startsWith('7') && v.length) v = '7'+v;
+        let out = '+7';
+        if (v.length > 1) out += ' (' + v.slice(1,4);
+        if (v.length >= 4) out += ') ' + v.slice(4,7);
+        if (v.length >= 7) out += '-' + v.slice(7,9);
+        if (v.length >= 9) out += '-' + v.slice(9,11);
+        phone.value = out;
+      });
+
+      // Pre-fill from session
+      const session = await getSession();
+      if (session) {
+        const p = await getProfile(session.user.id);
+        if (p) { document.getElementById('c-name').value = p.name||''; document.getElementById('c-email').value = p.email||''; }
+      }
+
+      // Confirm booking
+      let lastBooking = null;
+      document.getElementById('confirm-btn').addEventListener('click', async () => {
+        const clientName  = document.getElementById('c-name').value.trim();
+        const clientPhone = phone.value.trim();
+        const clientEmail = document.getElementById('c-email').value.trim();
+        if (!selectedDate)  { toast('Выберите дату');  return; }
+        if (!selectedTime)  { toast('Выберите время'); return; }
+        if (!clientName)    { toast('Укажите имя');    return; }
+        if (clientPhone.replace(/\D/g,'').length < 11) { toast('Укажите корректный телефон'); return; }
+
+        const { data, error } = await sb.from('bookings').insert({
+          master_id:        master.id,
+          client_id:        session?.user?.id || null,
+          service_id:       service.id,
+          service_name:     service.name,
+          service_price:    service.price,
+          service_duration: service.duration,
+          date_iso:         selectedDate.iso,
+          time:             selectedTime,
+          client_name:      clientName,
+          client_phone:     clientPhone,
+          client_email:     clientEmail || null,
+          status:           'upcoming',
+        }).select().single();
+
+        if (error) { toast('Ошибка: ' + error.message); return; }
+        lastBooking = data;
+
+        document.querySelectorAll('#steps .step-dot').forEach(d => d.classList.add('done'));
+        document.getElementById('title').textContent    = 'Готово';
+        document.getElementById('form-view').hidden     = true;
+        document.getElementById('success-view').hidden  = false;
+        document.getElementById('r-service').textContent = service.name;
+        document.getElementById('r-when').textContent    = `${selectedDate.label}, ${selectedTime}`;
+        document.getElementById('r-client').textContent  = `${clientName} · ${clientPhone}`;
+        document.getElementById('r-price').textContent   = fmt$(service.price);
+        window.scrollTo({ top:0, behavior:'smooth' });
+      });
+
+      // .ics export
+      document.getElementById('add-calendar').addEventListener('click', () => {
+        if (!lastBooking) return;
+        const start = new Date(lastBooking.date_iso + 'T' + lastBooking.time + ':00');
+        const end   = new Date(start.getTime() + (service.duration * 60000));
+        const fmtD  = d => d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+        const ics = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//BookMe//RU','BEGIN:VEVENT',
+          `UID:${lastBooking.id}@bookme.app`,`DTSTAMP:${fmtD(new Date())}`,
+          `DTSTART:${fmtD(start)}`,`DTEND:${fmtD(end)}`,
+          `SUMMARY:${service.name} — ${master.profiles?.name||'Мастер'}`,
+          `DESCRIPTION:${lastBooking.client_name || ''}, ${lastBooking.client_phone || ''}`,
+          'END:VEVENT','END:VCALENDAR'].join('\r\n');
+        const a = Object.assign(document.createElement('a'), {
+          href: URL.createObjectURL(new Blob([ics],{type:'text/calendar'})),
+          download:'bookme.ics',
+        });
+        document.body.appendChild(a); a.click(); a.remove();
+        toast('Файл календаря загружен', { icon:'✓' });
+      });
+    })();
+  </script>
+</body>
+</html>

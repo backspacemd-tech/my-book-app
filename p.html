@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0A0A0A" />
+  <title>BookMe — запись к мастеру</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="apple-touch-icon-512.png">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BookMe" />
+</head>
+<body>
+  <div class="public">
+    <div class="public-cover" id="cover"></div>
+
+    <header class="public-header">
+      <div class="avatar" id="avatar">M</div>
+      <h1 id="name">—</h1>
+      <p class="role" id="role"></p>
+      <p class="bio" id="bio"></p>
+      <div class="public-meta">
+        <span class="badge rating" id="rating-badge" hidden>
+          <span class="star">★</span>
+          <span id="rating-val">—</span>
+          <span class="muted" style="margin-left:2px;">·</span>
+          <span class="muted" id="rating-count">—</span>
+        </span>
+        <span class="badge" id="online-badge">⚡ Онлайн-запись</span>
+      </div>
+    </header>
+
+    <!-- Services -->
+    <section class="section" style="margin-top:24px;">
+      <div class="section-head">
+        <h3>Услуги</h3>
+        <span class="muted" style="font-size:13px;" id="select-hint">Выберите одну</span>
+      </div>
+      <div class="list" id="services"></div>
+    </section>
+
+    <!-- Reviews -->
+    <section class="section" id="reviews-section" hidden>
+      <div class="section-head">
+        <h3>Отзывы</h3>
+        <span class="muted" style="font-size:13px;" id="reviews-summary"></span>
+      </div>
+      <div class="scroller" id="reviews"></div>
+    </section>
+
+    <!-- Sticky CTA -->
+    <div class="sticky-cta">
+      <button class="btn btn-primary" id="book-btn" disabled>Выберите услугу</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script>
+    (async () => {
+      const params   = new URLSearchParams(location.search);
+      const username = params.get('u');
+      if (!username) { document.body.innerHTML = '<div class="empty" style="padding:60px 24px;text-align:center;"><h4>Мастер не найден</h4></div>'; return; }
+
+      // Load master by username
+      const { data: master } = await sb.from('masters')
+        .select('*, profiles(name, avatar_url, email)')
+        .eq('username', username)
+        .single();
+
+      if (!master) {
+        document.body.innerHTML = '<div class="empty" style="padding:60px 24px;text-align:center;"><h4>Мастер не найден</h4><p>Проверьте правильность ссылки</p></div>';
+        return;
+      }
+
+      const profile = master.profiles;
+
+      // Render header
+      document.title = `BookMe — ${profile?.name || 'Мастер'}`;
+      document.getElementById('name').textContent = profile?.name || 'Мастер';
+      document.getElementById('role').textContent = master.specialty || '';
+      document.getElementById('bio').textContent  = master.description || '';
+
+      const avatarEl = document.getElementById('avatar');
+      if (profile?.avatar_url) {
+        avatarEl.style.backgroundImage = `url(${profile.avatar_url})`;
+        avatarEl.style.backgroundSize  = 'cover';
+        avatarEl.style.backgroundPosition = 'center';
+        avatarEl.textContent = '';
+      } else {
+        avatarEl.textContent = (profile?.name || 'M').charAt(0).toUpperCase();
+      }
+
+      if (master.cover_url) {
+        document.getElementById('cover').style.backgroundImage = `url(${master.cover_url})`;
+        document.getElementById('cover').style.backgroundSize  = 'cover';
+      }
+
+      if (master.rating > 0 && master.reviews_count > 0) {
+        document.getElementById('rating-badge').hidden = false;
+        document.getElementById('rating-val').textContent   = master.rating.toFixed(1);
+        document.getElementById('rating-count').textContent = `${master.reviews_count} отзывов`;
+      }
+      if (!master.accepts_online) document.getElementById('online-badge').hidden = true;
+
+      // Load services
+      const { data: services = [] } = await sb.from('services').select('*').eq('master_id', master.id).order('price');
+
+      const servicesEl = document.getElementById('services');
+      const bookBtn    = document.getElementById('book-btn');
+      let selectedId   = null;
+
+      if (!services.length) {
+        servicesEl.innerHTML = `<div class="empty"><div class="empty-icon">✦</div><h4>Услуги не добавлены</h4><p>Мастер пока не настроил прайс-лист</p></div>`;
+        bookBtn.style.display = 'none';
+        document.getElementById('select-hint').style.display = 'none';
+      } else {
+        servicesEl.innerHTML = services.map(s => `
+          <div class="service-card" data-id="${s.id}">
+            <div class="check"></div>
+            <div class="info"><h3>${s.name}</h3><span class="duration">${s.duration} мин</span></div>
+            <div class="price">${fmt$(s.price)}</div>
+          </div>`).join('');
+        servicesEl.querySelectorAll('.service-card').forEach(card => {
+          card.addEventListener('click', () => {
+            servicesEl.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedId = card.dataset.id;
+            const svc = services.find(s => s.id === selectedId);
+            bookBtn.disabled = false;
+            bookBtn.textContent = `Записаться · ${fmt$(svc.price)}`;
+          });
+        });
+      }
+
+      // Load reviews
+      const { data: reviews = [] } = await sb.from('reviews').select('*').eq('master_id', master.id).order('created_at', { ascending: false }).limit(10);
+      if (reviews.length) {
+        document.getElementById('reviews-section').hidden = false;
+        document.getElementById('reviews-summary').textContent = master.rating > 0 ? `${master.rating.toFixed(1)} из 5` : '';
+        document.getElementById('reviews').innerHTML = reviews.map(r => `
+          <div class="review-card">
+            <div class="stars">${'★'.repeat(r.stars)}</div>
+            <p>«${r.text}»</p>
+            <div class="who">${r.who || 'Аноним'}</div>
+          </div>`).join('');
+      }
+
+      // Book button
+      bookBtn.addEventListener('click', () => {
+        if (!selectedId) return;
+        const svc = services.find(s => s.id === selectedId);
+        location.href = `booking.html?u=${encodeURIComponent(username)}&s=${selectedId}`;
+      });
+    })();
+  </script>
+</body>
+</html>

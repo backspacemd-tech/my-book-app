@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0A0A0A" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="apple-touch-icon-512.png">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BookMe" />
+  <title>BookMe — аналитика</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app no-nav">
+    <header class="topbar">
+      <a class="icon-btn-circle" href="master.html" aria-label="Назад">←</a>
+      <h1>Аналитика</h1>
+      <span class="right-spacer"></span>
+    </header>
+
+    <div class="tabs" role="tablist" style="margin-top:6px;">
+      <div class="tab active" data-period="week">Неделя</div>
+      <div class="tab" data-period="month">Месяц</div>
+      <div class="tab" data-period="year">Год</div>
+    </div>
+
+    <div class="analytics-grid">
+      <div class="metric-card accent"><div class="m-label">Выручка</div><div class="m-value" id="m-revenue">$0</div><div class="m-sub" id="m-period-label">за неделю</div></div>
+      <div class="metric-card"><div class="m-label">Записей</div><div class="m-value" id="m-count">0</div><div class="m-sub">визитов</div></div>
+      <div class="metric-card"><div class="m-label">Средний чек</div><div class="m-value" id="m-avg">$0</div><div class="m-sub">за визит</div></div>
+      <div class="metric-card"><div class="m-label">Клиентов</div><div class="m-value" id="m-clients">0</div><div class="m-sub">уникальных</div></div>
+    </div>
+
+    <section class="section" style="margin-top:20px;">
+      <div class="section-head"><h3 id="chart-title">Выручка по дням</h3><span class="muted" style="font-size:13px;" id="chart-sub">неделя</span></div>
+      <div class="card"><div class="barchart" id="barchart" style="height:120px;"></div><div style="height:26px;"></div></div>
+    </section>
+
+    <div class="profit-card">
+      <div class="row"><span class="lbl">Выручка</span><span class="val" id="p-revenue">$0</span></div>
+      <div class="row">
+        <span class="lbl">Расходы / мес</span>
+        <span class="val"><div class="expenses-input-wrap"><span>$</span><input type="number" id="expenses-input" min="0" placeholder="0" /></div></span>
+      </div>
+      <div class="row profit"><span class="lbl">Чистая прибыль</span><span class="val" id="p-profit">$0</span></div>
+    </div>
+
+    <section class="section" style="margin-top:20px;"><div class="section-head"><h3>Топ услуги</h3></div><div class="list" id="top-services"></div></section>
+
+    <section class="section" style="margin-top:20px;margin-bottom:32px;">
+      <div class="section-head"><h3>Записи за период</h3><a href="bookings.html" style="font-size:13px;color:var(--text-2);">Все →</a></div>
+      <div class="list" id="period-bookings"></div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script>
+    let _bookings = [], _masterId, _expenses = 0, _currentPeriod = 'week';
+
+    function getFilteredBookings(period) {
+      const cutoffs = { week: todayISO(-6), month: todayISO(-29) };
+      if (period === 'year') {
+        const d = new Date(); d.setFullYear(d.getFullYear()-1);
+        return _bookings.filter(b => b.date_iso >= d.toISOString().slice(0,10));
+      }
+      return _bookings.filter(b => b.date_iso >= cutoffs[period] && b.date_iso <= todayISO(0));
+    }
+
+    function updateProfit() {
+      const rev = parseInt(document.getElementById('p-revenue').dataset.raw || 0);
+      const profit = rev - _expenses;
+      const el = document.getElementById('p-profit');
+      el.textContent = fmt$(profit);
+      el.closest('.row').className = 'row ' + (profit >= 0 ? 'profit' : 'loss');
+    }
+
+    function render() {
+      const data     = calcAnalytics(_bookings, _currentPeriod);
+      const filtered = getFilteredBookings(_currentPeriod);
+      const labels   = { week:'за неделю', month:'за месяц', year:'за год' };
+      const charts   = { week:'Выручка по дням', month:'Выручка по неделям', year:'Выручка по месяцам' };
+
+      document.getElementById('m-revenue').textContent      = fmt$(data.totalRevenue);
+      document.getElementById('m-period-label').textContent = labels[_currentPeriod];
+      document.getElementById('m-count').textContent        = data.totalCount;
+      document.getElementById('m-avg').textContent          = fmt$(data.avgCheck);
+      document.getElementById('chart-title').textContent    = charts[_currentPeriod];
+      document.getElementById('chart-sub').textContent      = labels[_currentPeriod];
+      document.getElementById('m-clients').textContent      = new Set(filtered.map(b => b.client_phone||b.client_id||b.client_name)).size;
+
+      document.getElementById('p-revenue').textContent      = fmt$(data.totalRevenue);
+      document.getElementById('p-revenue').dataset.raw      = data.totalRevenue;
+      updateProfit();
+
+      const maxRev = Math.max(1, ...data.revenue);
+      document.getElementById('barchart').innerHTML = data.labels.map((lbl, i) =>
+        `<div class="bar ${data.revenue[i]===0?'muted':''}" style="height:${Math.max(4,Math.round(data.revenue[i]/maxRev*100))}%" title="${fmt$(data.revenue[i])}"><span class="label">${lbl}</span></div>`
+      ).join('');
+
+      const svcMap = {};
+      filtered.forEach(b => {
+        if (!svcMap[b.service_name]) svcMap[b.service_name] = { count:0, revenue:0 };
+        svcMap[b.service_name].count++; svcMap[b.service_name].revenue += b.service_price||0;
+      });
+      const topSvcs = Object.entries(svcMap).sort((a,b) => b[1].revenue-a[1].revenue).slice(0,4);
+      const topEl = document.getElementById('top-services');
+      if (!topSvcs.length) { topEl.innerHTML = `<div class="empty"><div class="empty-icon">✦</div><h4>Нет данных</h4></div>`; }
+      else {
+        const maxR = topSvcs[0][1].revenue || 1;
+        topEl.innerHTML = topSvcs.map(([name, s]) => `
+          <div class="card" style="padding:14px 16px;margin-bottom:8px;">
+            <div class="flex-between" style="margin-bottom:8px;"><span style="font-size:14px;font-weight:600;">${name}</span><span style="font-size:14px;font-weight:700;">${fmt$(s.revenue)}</span></div>
+            <div style="height:4px;background:var(--border);border-radius:4px;overflow:hidden;"><div style="height:100%;width:${Math.round(s.revenue/maxR*100)}%;background:var(--text);border-radius:4px;transition:width .4s;"></div></div>
+            <div class="muted" style="font-size:12px;margin-top:6px;">${s.count} записей</div>
+          </div>`).join('');
+      }
+
+      const sorted = [...filtered].sort((a,b) => a.date_iso > b.date_iso ? -1 : 1).slice(0,10);
+      const pbEl = document.getElementById('period-bookings');
+      if (!sorted.length) { pbEl.innerHTML = `<div class="empty"><div class="empty-icon">📅</div><h4>Нет записей</h4></div>`; }
+      else pbEl.innerHTML = sorted.map(b => {
+        const status = isToday(b.date_iso) ? 'today' : isFuture(b.date_iso) ? 'upcoming' : 'past';
+        const label  = { today:'сегодня', upcoming:'предстоит', past:'прошло' }[status];
+        return `<div class="row-item">
+          <div class="mini-avatar gradient">${b.client_name.charAt(0)}</div>
+          <div class="meta"><div class="title">${b.client_name}</div><div class="sub">${b.service_name} · ${b.date_iso}</div></div>
+          <div class="meta" style="text-align:right;flex:0 0 auto;"><div class="price">${fmt$(b.service_price)}</div><span class="chip-status ${status}">${label}</span></div>
+        </div>`;
+      }).join('');
+    }
+
+    (async () => {
+      const auth = await requireAuth('master');
+      if (!auth) return;
+      _masterId = auth.profile.id;
+
+      // Load master expenses
+      const { data: master } = await sb.from('masters').select('expenses').eq('id', _masterId).single();
+      _expenses = master?.expenses || 0;
+      document.getElementById('expenses-input').value = _expenses;
+
+      // Load bookings
+      const { data } = await sb.from('bookings').select('*').eq('master_id', _masterId).neq('status','cancelled');
+      _bookings = data || [];
+
+      document.getElementById('expenses-input').addEventListener('input', async e => {
+        _expenses = parseInt(e.target.value) || 0;
+        await sb.from('masters').update({ expenses: _expenses }).eq('id', _masterId);
+        updateProfit();
+      });
+
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          _currentPeriod = tab.dataset.period;
+          render();
+        });
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

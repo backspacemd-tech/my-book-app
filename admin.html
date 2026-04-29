@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0A0A0A" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="apple-touch-icon-512.png">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BookMe" />
+  <title>BookMe — Admin</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <span class="left-spacer"></span>
+      <h1 id="page-title">Обзор</h1>
+      <button class="icon-btn-circle" id="logout-btn" title="Выйти" aria-label="Выйти">⎋</button>
+    </header>
+
+    <!-- ── Overview ── -->
+    <div id="view-home">
+      <section class="hero" style="padding-bottom:8px;">
+        <div class="greet">Панель администратора</div>
+        <h2 id="admin-name">—</h2>
+        <p>Полный доступ ко всем данным BookMe</p>
+      </section>
+
+      <section class="stats" style="margin-top:16px;">
+        <div class="stat dark"><div class="stat-label">Пользователей</div><div class="stat-value" id="stat-users">—</div><div class="stat-trend">всего</div></div>
+        <div class="stat"><div class="stat-label">Мастеров</div><div class="stat-value" id="stat-masters">—</div><div class="stat-trend muted">активных</div></div>
+      </section>
+      <section class="stats" style="margin-top:10px;">
+        <div class="stat"><div class="stat-label">Записей</div><div class="stat-value" id="stat-bookings">—</div><div class="stat-trend muted">всего</div></div>
+        <div class="stat"><div class="stat-label">Клиентов</div><div class="stat-value" id="stat-clients">—</div><div class="stat-trend muted">зарегистрированных</div></div>
+      </section>
+
+      <section class="section" style="margin-top:20px;">
+        <div class="section-head"><h3>Быстрые действия</h3></div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="location.hash='#users'">Пользователи</button>
+          <button class="btn btn-secondary" onclick="location.hash='#news'">Новости</button>
+          <button class="btn btn-secondary" onclick="openInviteSheet()">+ Пригласить</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- ── Users ── -->
+    <div id="view-users" hidden>
+      <section class="hero" style="padding-bottom:8px;">
+        <h2>Пользователи</h2>
+        <p>Управление аккаунтами и ролями</p>
+      </section>
+      <div style="padding:0 20px 12px;">
+        <input id="user-search" type="search" placeholder="Поиск по имени или email…"
+          style="width:100%;box-sizing:border-box;padding:11px 14px;border:1px solid var(--border);border-radius:var(--r);font-size:15px;background:var(--surface);color:var(--text);outline:none;" />
+      </div>
+      <section class="section" style="margin-top:0;">
+        <div class="list" id="users-list"></div>
+      </section>
+    </div>
+
+    <!-- ── News ── -->
+    <div id="view-news" hidden>
+      <section class="hero" style="padding-bottom:8px;">
+        <h2>Новости</h2>
+        <p>Публикации для пользователей</p>
+      </section>
+      <div style="padding:0 20px 12px;">
+        <button class="btn btn-primary" id="add-news-btn">+ Добавить новость</button>
+      </div>
+      <section class="section" style="margin-top:0;">
+        <div id="news-list"></div>
+      </section>
+    </div>
+
+    <!-- ── Settings ── -->
+    <div id="view-settings" hidden>
+      <section class="hero" style="padding-bottom:8px;">
+        <h2>Настройки</h2>
+        <p>Конфигурация платформы BookMe</p>
+      </section>
+      <div style="padding:0 20px;">
+        <div class="card" style="margin-bottom:14px;">
+          <div class="field"><label>Название платформы</label><input id="s-appname" type="text" value="BookMe" /></div>
+          <div class="field" style="margin-bottom:0;"><label>Слоган</label><input id="s-tagline" type="text" value="Онлайн-запись для мастеров и клиентов" /></div>
+        </div>
+        <button class="btn btn-primary" id="save-settings-btn">Сохранить</button>
+        <div style="height:16px;"></div>
+        <div class="card" style="padding:14px 16px;">
+          <div class="title" style="font-size:13px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Информация</div>
+          <div class="flex-between" style="font-size:14px;padding:6px 0;border-bottom:1px solid var(--border);">
+            <span class="muted">Supabase проект</span><span style="font-weight:600;">bxuiggebgnxewmjwkbqa</span>
+          </div>
+          <div class="flex-between" style="font-size:14px;padding:6px 0;">
+            <span class="muted">Регион</span><span style="font-weight:600;">eu-central-1</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script>
+    let _users = [], _news = [], _profile;
+
+    function setView(name) {
+      ['home','users','news','settings'].forEach(v => document.getElementById('view-'+v).hidden = v !== name);
+      const titles = { home:'Обзор', users:'Пользователи', news:'Новости', settings:'Настройки' };
+      document.getElementById('page-title').textContent = titles[name] || 'Обзор';
+      document.querySelectorAll('.tabbar a').forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#'+name);
+      });
+    }
+
+    async function loadStats() {
+      const [u, m, b, c] = await Promise.all([
+        sb.from('profiles').select('id', { count:'exact', head:true }),
+        sb.from('masters').select('id', { count:'exact', head:true }),
+        sb.from('bookings').select('id', { count:'exact', head:true }),
+        sb.from('profiles').select('id', { count:'exact', head:true }).eq('role','client'),
+      ]);
+      document.getElementById('stat-users').textContent    = u.count ?? '—';
+      document.getElementById('stat-masters').textContent  = m.count ?? '—';
+      document.getElementById('stat-bookings').textContent = b.count ?? '—';
+      document.getElementById('stat-clients').textContent  = c.count ?? '—';
+    }
+
+    async function loadUsers(search = '') {
+      let q = sb.from('profiles').select('*, masters(plan, username)').order('created_at', { ascending:false }).limit(50);
+      const { data } = await q;
+      _users = (data||[]).filter(u => !search || u.name?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase()));
+      const list = document.getElementById('users-list');
+      if (!_users.length) { list.innerHTML = `<div class="empty"><div class="empty-icon">👤</div><h4>Нет пользователей</h4></div>`; return; }
+      list.innerHTML = _users.map(u => {
+        const roleLabels = { admin:'🔑 Admin', master:'✂ Мастер', client:'👤 Клиент' };
+        const planLabel  = u.masters?.plan ? ` · ${u.masters.plan}` : '';
+        return `<div class="row-item clickable" data-id="${u.id}">
+          <div class="mini-avatar gradient">${(u.name||u.email||'?').charAt(0).toUpperCase()}</div>
+          <div class="meta"><div class="title">${u.name||'Без имени'}</div><div class="sub">${u.email}${planLabel}</div></div>
+          <span class="admin-badge ${u.role==='admin'?'green':''}">${roleLabels[u.role]||u.role}</span>
+        </div>`;
+      }).join('');
+      list.querySelectorAll('.row-item').forEach(row => {
+        const user = _users.find(u => u.id === row.dataset.id);
+        row.addEventListener('click', () => openUserSheet(user));
+      });
+    }
+
+    function openUserSheet(user) {
+      const roleLabels = { admin:'Администратор', master:'Мастер', client:'Клиент' };
+      openSheet(`
+        <h3>${user.name || user.email}</h3>
+        <p class="muted" style="font-size:14px;margin:0 0 14px;">${user.email} · ${user.role}${user.masters?.username ? ' · @'+user.masters.username : ''}</p>
+        <div class="card" style="padding:6px 16px;margin-bottom:14px;">
+          ${[['Роль', roleLabels[user.role]||user.role], ['Тариф', user.masters?.plan||'—'], ['ID', user.id.slice(0,8)+'…']].map(([k,v]) => `
+            <div class="flex-between" style="padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;"><span class="muted">${k}</span><span style="font-weight:600;">${v}</span></div>
+          `).join('').replace(/border-bottom:1px solid var\(--border\);">\s*$/, '">') /* remove last border */}
+        </div>
+        <h4 style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px;">Изменить роль</h4>
+        <div class="btn-row" style="flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+          ${['admin','master','client'].map(r => `<button class="btn btn-secondary btn-sm" data-role="${r}" style="flex:none;${user.role===r?'border-color:var(--text);font-weight:700;':''}">${roleLabels[r]}</button>`).join('')}
+        </div>
+        ${user.role === 'master' ? `
+          <h4 style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px;">Изменить тариф</h4>
+          <div class="btn-row" style="flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+            ${['trial','free','pro','studio'].map(p => `<button class="btn btn-secondary btn-sm" data-plan="${p}" style="flex:none;${(user.masters?.plan||'trial')===p?'border-color:var(--text);font-weight:700;':''}">${p}</button>`).join('')}
+          </div>` : ''}
+        <button class="btn btn-secondary" onclick="closeSheet()">Закрыть</button>
+      `);
+      document.querySelectorAll('[data-role]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          await sb.from('profiles').update({ role: btn.dataset.role }).eq('id', user.id);
+          if (btn.dataset.role === 'master') {
+            const { data: existing } = await sb.from('masters').select('id').eq('id', user.id).single();
+            if (!existing) await sb.from('masters').insert({ id: user.id, username: user.email.split('@')[0] });
+          }
+          closeSheet(); await loadUsers(); await loadStats();
+          toast('Роль изменена', { icon:'✓' });
+        });
+      });
+      document.querySelectorAll('[data-plan]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          await sb.from('masters').update({ plan: btn.dataset.plan }).eq('id', user.id);
+          closeSheet(); await loadUsers(); toast('Тариф изменён', { icon:'✓' });
+        });
+      });
+    }
+
+    async function loadNews() {
+      const { data } = await sb.from('news').select('*').order('created_at', { ascending: false });
+      _news = data || [];
+      const container = document.getElementById('news-list');
+      if (!_news.length) { container.innerHTML = `<div class="empty" style="padding:24px 20px;"><div class="empty-icon">📰</div><h4>Новостей нет</h4></div>`; return; }
+      container.innerHTML = _news.map(n => `
+        <div class="news-item" data-id="${n.id}" style="margin:0 20px 10px;">
+          <div class="news-date">${n.created_at?.slice(0,10)} ${n.published ? '<span class="admin-badge green">Опубликовано</span>' : '<span class="admin-badge">Черновик</span>'}</div>
+          <div class="news-title">${n.title}</div>
+          <div class="news-body">${n.body||''}</div>
+        </div>`).join('');
+      container.querySelectorAll('.news-item').forEach(item => {
+        const news = _news.find(n => n.id === item.dataset.id);
+        item.addEventListener('click', () => openNewsForm(news));
+      });
+    }
+
+    function openNewsForm(news = null) {
+      openSheet(`
+        <h3>${news ? 'Редактировать' : 'Новая новость'}</h3>
+        <div class="field"><label>Заголовок</label><input id="n-title" type="text" placeholder="Обновление…" value="${(news?.title||'').replace(/"/g,'&quot;')}" /></div>
+        <div class="field"><label>Текст</label><textarea id="n-body" placeholder="Подробнее…">${news?.body||''}</textarea></div>
+        <div class="row-item" style="border:none;box-shadow:none;background:transparent;padding:0 0 14px;">
+          <div class="meta"><div class="title" style="font-size:15px;">Опубликовать</div></div>
+          <label class="switch"><input type="checkbox" id="n-pub" ${news?.published?'checked':''} /><span class="slider"></span></label>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="closeSheet()">Отмена</button>
+          <button class="btn btn-primary" id="n-save">Сохранить</button>
+        </div>
+        ${news ? `<button class="btn btn-danger mt-12" id="n-del">Удалить</button>` : ''}
+      `);
+      document.getElementById('n-save').addEventListener('click', async () => {
+        const title = document.getElementById('n-title').value.trim();
+        const body  = document.getElementById('n-body').value.trim();
+        const published = document.getElementById('n-pub').checked;
+        if (!title) { toast('Укажите заголовок'); return; }
+        if (news) await sb.from('news').update({ title, body, published }).eq('id', news.id);
+        else      await sb.from('news').insert({ title, body, published });
+        closeSheet(); await loadNews(); toast(news ? 'Сохранено' : 'Новость добавлена', { icon:'✓' });
+      });
+      document.getElementById('n-del')?.addEventListener('click', async () => {
+        await sb.from('news').delete().eq('id', news.id);
+        closeSheet(); await loadNews(); toast('Удалено');
+      });
+    }
+
+    window.openInviteSheet = function() {
+      openSheet(`
+        <h3>Пригласить сотрудника</h3>
+        <p class="muted" style="font-size:14px;margin:0 0 14px;">Ссылка для регистрации с предустановленной ролью</p>
+        <div class="field"><label>Email</label><input id="inv-email" type="email" placeholder="colleague@example.com" /></div>
+        <div class="field" style="margin-bottom:14px;">
+          <label>Роль</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+            <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:2px solid var(--border);border-radius:var(--r-sm);cursor:pointer;">
+              <input type="radio" name="inv-role" value="master" checked /> Мастер
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:2px solid var(--border);border-radius:var(--r-sm);cursor:pointer;">
+              <input type="radio" name="inv-role" value="client" /> Клиент
+            </label>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="closeSheet()">Отмена</button>
+          <button class="btn btn-primary" id="inv-send">Создать ссылку</button>
+        </div>
+      `);
+      document.getElementById('inv-send').addEventListener('click', async () => {
+        const email = document.getElementById('inv-email').value.trim();
+        const role  = document.querySelector('input[name=inv-role]:checked')?.value || 'master';
+        if (!email) { toast('Укажите email'); return; }
+        const { data, error } = await sb.from('invitations').insert({ email, role, invited_by: _profile.id }).select().single();
+        if (error) { toast('Ошибка: ' + error.message); return; }
+        const link = `${window.location.origin}/index.html?invite=${data.token}`;
+        await copyToClipboard(link);
+        closeSheet(); toast('Ссылка скопирована!', { icon:'✓' });
+      });
+    };
+
+    (async () => {
+      const auth = await requireAuth('admin');
+      if (!auth) return;
+      _profile = auth.profile;
+      document.getElementById('admin-name').textContent = _profile.name || _profile.email;
+      document.getElementById('logout-btn').addEventListener('click', signOut);
+      document.getElementById('add-news-btn')?.addEventListener('click', () => openNewsForm());
+      document.getElementById('user-search')?.addEventListener('input', e => loadUsers(e.target.value));
+      document.getElementById('save-settings-btn')?.addEventListener('click', () => toast('Настройки сохранены', { icon:'✓' }));
+
+      await loadStats();
+
+      const navigate = async () => {
+        const hash = location.hash.replace('#','') || 'home';
+        setView(hash);
+        if (hash === 'users') await loadUsers();
+        if (hash === 'news')  await loadNews();
+      };
+      window.addEventListener('hashchange', navigate);
+      await navigate();
+
+      renderAdminTabBar('home');
+
+      // Realtime: update stats on new bookings/users
+      sb.channel('admin-realtime')
+        .on('postgres_changes', { event:'INSERT', schema:'public', table:'profiles' }, loadStats)
+        .on('postgres_changes', { event:'INSERT', schema:'public', table:'bookings' }, loadStats)
+        .subscribe();
+    })();
+  </script>
+</body>
+</html>

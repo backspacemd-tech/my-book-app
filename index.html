@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0A0A0A" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="apple-touch-icon-512.png">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BookMe" />
+  <title>BookMe — онлайн-запись</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-logo" style="font-size:30px;font-weight:800;letter-spacing:-0.04em;margin-bottom:4px;">
+      Book<span style="color:var(--rose);">Me</span>
+    </div>
+    <p class="muted" style="text-align:center;font-size:14px;margin:0 0 28px;">Онлайн-запись для мастеров и клиентов</p>
+
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tab-login">Вход</div>
+      <div class="auth-tab"        id="tab-reg">Регистрация</div>
+    </div>
+
+    <!-- ── Login ── -->
+    <div id="form-login">
+      <div class="field">
+        <label for="l-email">Email</label>
+        <input id="l-email" type="email" placeholder="anna@example.com" autocomplete="email" />
+      </div>
+      <div class="field">
+        <label for="l-pwd">Пароль</label>
+        <input id="l-pwd" type="password" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+      <button class="btn btn-primary" id="login-btn">Войти</button>
+      <div style="height:12px;"></div>
+      <div id="google-login-wrap">
+        <button class="btn btn-google" id="google-login-btn">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          Войти через Google
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Register ── -->
+    <div id="form-reg" hidden>
+      <div style="margin-bottom:18px;">
+        <div class="field-hint" style="margin-bottom:10px;font-size:13px;font-weight:600;color:var(--text);">Я регистрируюсь как:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <label class="role-card" id="rc-master">
+            <input type="radio" name="role" value="master" checked />
+            <div style="font-size:26px;margin-bottom:4px;">✂</div>
+            <div style="font-size:14px;font-weight:700;">Мастер</div>
+            <div style="font-size:12px;color:var(--text-2);">Принимаю клиентов</div>
+          </label>
+          <label class="role-card" id="rc-client">
+            <input type="radio" name="role" value="client" />
+            <div style="font-size:26px;margin-bottom:4px;">👤</div>
+            <div style="font-size:14px;font-weight:700;">Клиент</div>
+            <div style="font-size:12px;color:var(--text-2);">Записываюсь онлайн</div>
+          </label>
+        </div>
+      </div>
+      <div class="field" id="specialty-group" style="display:block;margin-bottom:16px;">
+        <div class="field-hint" style="margin-bottom:10px;font-size:13px;font-weight:600;color:var(--text);">Сфера деятельности</div>
+        <div class="chips" id="specialty-chips" style="gap:8px;overflow-x:auto;scrollbar-width:none;">
+          <div class="chip active" data-value="barber">Барбер</div>
+          <div class="chip" data-value="nail">Ногти</div>
+          <div class="chip" data-value="beauty">Бьюти</div>
+          <div class="chip" data-value="massage">Массаж</div>
+          <div class="chip" data-value="trainer">Тренер</div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="r-name">Имя</label>
+        <input id="r-name" type="text" placeholder="Анна Соколова" autocomplete="name" />
+      </div>
+      <div class="field">
+        <label for="r-email">Email</label>
+        <input id="r-email" type="email" placeholder="anna@example.com" autocomplete="email" />
+      </div>
+      <div class="field">
+        <label for="r-pwd">Пароль</label>
+        <input id="r-pwd" type="password" placeholder="Минимум 6 символов" autocomplete="new-password" />
+      </div>
+      <button class="btn btn-primary" id="reg-btn">Создать аккаунт</button>
+      <div style="height:12px;"></div>
+      <div id="google-reg-wrap">
+        <button class="btn btn-google" id="google-reg-btn">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          Зарегистрироваться через Google
+        </button>
+      </div>
+      <p class="auth-footer" style="font-size:12px;color:var(--text-3);text-align:center;margin-top:16px;">
+        Первый зарегистрированный пользователь получает права администратора.
+      </p>
+    </div>
+
+    <!-- Social proof -->
+    <div style="display:flex;align-items:center;gap:10px;margin-top:20px;justify-content:center;">
+      <div style="display:flex;">
+        <div class="mini-avatar gradient" style="width:26px;height:26px;font-size:11px;">А</div>
+        <div class="mini-avatar gradient" style="width:26px;height:26px;font-size:11px;margin-left:-6px;">М</div>
+        <div class="mini-avatar gradient" style="width:26px;height:26px;font-size:11px;margin-left:-6px;">С</div>
+      </div>
+      <span class="muted" style="font-size:13px;">Более <strong style="color:var(--text);">2 400</strong> мастеров в BookMe</span>
+    </div>
+  </div>
+
+  <style>
+    .role-card {
+      display:flex;flex-direction:column;align-items:center;gap:2px;
+      border:2px solid var(--border);border-radius:var(--r-md);padding:14px 8px;
+      cursor:pointer;transition:border-color .15s,background .15s;text-align:center;
+    }
+    .role-card input[type=radio] { display:none; }
+    .role-card:has(input:checked) { border-color:var(--text);background:var(--surface-2); }
+    .btn-google {
+      width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
+      background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+      padding:13px;font-size:15px;font-weight:500;cursor:pointer;color:var(--text);
+      transition:background .15s;
+    }
+    .btn-google:hover { background:var(--surface-2); }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // If already logged in, redirect immediately
+    (async () => {
+      const session = await getSession();
+      if (!session) return;
+      const profile = await getProfile(session.user.id)
+        || await ensureProfile(session.user, { email: session.user.email, name: session.user.user_metadata?.name || undefined });
+      if (profile) redirectByRole(profile.role);
+    })();
+
+    // Tab switching
+    ['login','reg'].forEach(t => {
+      document.getElementById('tab-'+t).addEventListener('click', () => {
+        document.querySelectorAll('.auth-tab').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-'+t).classList.add('active');
+        document.getElementById('form-login').hidden = t !== 'login';
+        document.getElementById('form-reg').hidden   = t !== 'reg';
+      });
+    });
+
+    // Human-readable Supabase errors
+    function friendlyError(err) {
+      if (!err) return 'Неизвестная ошибка';
+      const m = err.message || '';
+      if (m.includes('Invalid login credentials'))    return 'Неверный email или пароль';
+      if (m.includes('Email not confirmed'))           return 'Подтвердите email — проверьте почту';
+      if (m.includes('User already registered'))       return 'Этот email уже зарегистрирован — войдите';
+      if (m.includes('provider is not enabled'))       return 'Войдите через email и пароль';
+      if (m.includes('Password should be at least'))  return 'Пароль минимум 6 символов';
+      if (m.includes('Unable to validate email'))      return 'Неверный формат email';
+      if (m.includes('rate limit'))                    return 'Слишком много попыток, подождите минуту';
+      return m;
+    }
+
+    // Login with email
+    document.getElementById('login-btn').addEventListener('click', async () => {
+      const email = document.getElementById('l-email').value.trim();
+      const pwd   = document.getElementById('l-pwd').value;
+      if (!email || !pwd) { toast('Заполните все поля'); return; }
+      const btn = document.getElementById('login-btn');
+      btn.textContent = 'Входим…'; btn.disabled = true;
+      const { data, error } = await sb.auth.signInWithPassword({ email, password: pwd });
+      if (error) { toast(friendlyError(error)); btn.textContent = 'Войти'; btn.disabled = false; return; }
+      const profile = await getProfile(data.user.id) || await ensureProfile(data.user, { email });
+      redirectByRole(profile?.role || 'client');
+    });
+
+    // Register event is initialized after specialty selection controls
+
+    // Google OAuth — only if configured
+    const googleOAuth = async () => {
+      const { error } = await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + '/dashboard.html' },
+      });
+      if (error) toast('Google ещё не подключён. Используйте email и пароль.');
+    };
+    document.getElementById('google-login-btn').addEventListener('click', googleOAuth);
+    document.getElementById('google-reg-btn').addEventListener('click', googleOAuth);
+
+    const specialtyGroup = document.getElementById('specialty-group');
+    const specialtyChips = Array.from(document.querySelectorAll('#specialty-chips .chip'));
+    const setSpecialty = (value) => {
+      specialtyChips.forEach(chip => chip.classList.toggle('active', chip.dataset.value === value));
+    };
+    specialtyChips.forEach(chip => chip.addEventListener('click', () => setSpecialty(chip.dataset.value)));
+
+    const toggleSpecialtyGroup = () => {
+      const role = document.querySelector('input[name=role]:checked')?.value;
+      specialtyGroup.style.display = role === 'master' ? 'block' : 'none';
+    };
+    document.querySelectorAll('input[name=role]').forEach(input => input.addEventListener('change', toggleSpecialtyGroup));
+    toggleSpecialtyGroup();
+
+    document.getElementById('reg-btn').addEventListener('click', async () => {
+      const name  = document.getElementById('r-name').value.trim();
+      const email = document.getElementById('r-email').value.trim();
+      const pwd   = document.getElementById('r-pwd').value;
+      const role  = document.querySelector('input[name=role]:checked')?.value || 'client';
+      const specialty = role === 'master' ? document.querySelector('#specialty-chips .chip.active')?.dataset.value : null;
+      if (!name || !email || !pwd) { toast('Заполните все поля'); return; }
+      if (pwd.length < 6) { toast('Пароль минимум 6 символов'); return; }
+      const btn = document.getElementById('reg-btn');
+      btn.textContent = 'Создаём…'; btn.disabled = true;
+      const { data, error } = await sb.auth.signUp({ email, password: pwd, options: { data: { name, role, specialty } } });
+      if (error) { toast(friendlyError(error)); btn.textContent = 'Создать аккаунт'; btn.disabled = false; return; }
+      // Auto-login after signup
+      const { data: login, error: loginErr } = await sb.auth.signInWithPassword({ email, password: pwd });
+      if (loginErr) {
+        toast('Аккаунт создан! Проверьте почту и подтвердите email.', { icon: '✓' });
+        btn.textContent = 'Создать аккаунт'; btn.disabled = false;
+        return;
+      }
+      if (login?.user) {
+        await new Promise(r => setTimeout(r, 900));
+        const profile = await getProfile(login.user.id) || await ensureProfile(login.user, { name, email, role, specialty });
+        redirectByRole(profile?.role || role);
+      }
+    });
+  </script>
+</body>
+</html>

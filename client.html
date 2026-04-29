@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0A0A0A" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="apple-touch-icon-512.png">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BookMe" />
+  <title>BookMe — для клиентов</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <span class="left-spacer"></span>
+      <h1 id="page-title">Главная</h1>
+      <button class="icon-btn-circle" id="logout-btn" title="Выйти" aria-label="Выйти">⎋</button>
+    </header>
+
+    <!-- Home view -->
+    <div id="view-home">
+      <section class="hero">
+        <div class="greet" id="greet">Добрый день</div>
+        <h2 id="user-name">—</h2>
+        <p>Найдите мастера и запишитесь онлайн</p>
+      </section>
+
+      <!-- Search bar -->
+      <div style="padding:0 20px 16px;">
+        <div style="position:relative;">
+          <input id="search-input" type="search" placeholder="Поиск мастера по имени или специализации…"
+            style="width:100%;box-sizing:border-box;padding:12px 16px 12px 40px;border:1px solid var(--border);border-radius:var(--r);font-size:15px;background:var(--surface);color:var(--text);outline:none;" />
+          <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none;color:var(--text-3);">🔍</span>
+        </div>
+      </div>
+
+      <!-- Specialty filter chips -->
+      <div class="chat-suggestions" style="padding:0 20px 16px;">
+        <div class="chat-suggestion-chip active-chip" data-spec="">Все</div>
+        <div class="chat-suggestion-chip" data-spec="beauty">Бьюти</div>
+        <div class="chat-suggestion-chip" data-spec="barber">Барбер</div>
+        <div class="chat-suggestion-chip" data-spec="trainer">Тренер</div>
+        <div class="chat-suggestion-chip" data-spec="nail">Ногти</div>
+        <div class="chat-suggestion-chip" data-spec="massage">Массаж</div>
+      </div>
+
+      <section class="section" style="margin-top:0;">
+        <div class="section-head"><h3>Мастера</h3><span class="muted" style="font-size:13px;" id="masters-count"></span></div>
+        <div class="list" id="masters-list"></div>
+      </section>
+    </div>
+
+    <!-- My bookings view -->
+    <div id="view-bookings" hidden>
+      <section class="hero" style="padding-bottom:14px;">
+        <h2>Мои записи</h2>
+        <p id="bookings-summary">—</p>
+      </section>
+      <div class="tabs" role="tablist">
+        <div class="tab active" data-filter="upcoming">Предстоящие</div>
+        <div class="tab" data-filter="past">Прошлые</div>
+      </div>
+      <section class="section" style="margin-top:8px;">
+        <div class="list" id="my-bookings-list"></div>
+      </section>
+    </div>
+
+    <!-- Profile view -->
+    <div id="view-profile" hidden>
+      <section class="hero" style="padding-bottom:0;">
+        <div class="mini-avatar gradient" id="cl-avatar" style="width:72px;height:72px;font-size:28px;margin:0 auto 12px;background-size:cover;background-position:center;">?</div>
+        <h2 id="cl-name">—</h2>
+        <p class="muted" id="cl-email">—</p>
+      </section>
+      <div style="padding:20px;">
+        <div class="card" style="margin-bottom:14px;">
+          <div class="field"><label for="cl-name-input">Имя</label><input id="cl-name-input" type="text" /></div>
+        </div>
+        <button class="btn btn-primary" id="save-profile-btn">Сохранить</button>
+        <div style="height:12px;"></div>
+        <button class="btn btn-danger" id="logout-profile-btn">Выйти из аккаунта</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .active-chip { background: var(--text) !important; color: var(--bg) !important; border-color: var(--text) !important; }
+    .master-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md);
+      padding: 16px; display: flex; align-items: center; gap: 14px; cursor: pointer;
+      transition: transform .1s var(--ease); margin-bottom: 10px; text-decoration: none; color: inherit;
+    }
+    .master-card:active { transform: scale(.99); }
+    .master-card .info { flex: 1; }
+    .master-card .m-name { font-size: 15px; font-weight: 700; }
+    .master-card .m-spec { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+    .master-card .m-rating { font-size: 13px; color: var(--text-2); margin-top: 4px; }
+    .master-card .m-cta { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script>
+    let _profile, _allMasters = [], _myBookings = [];
+    let _currentSpec = '', _searchQuery = '';
+
+    function setView(name) {
+      ['home','bookings','profile'].forEach(v => {
+        document.getElementById('view-'+v).hidden = v !== name;
+      });
+      const titles = { home:'Главная', bookings:'Мои записи', profile:'Профиль' };
+      document.getElementById('page-title').textContent = titles[name];
+    }
+
+    async function loadMasters() {
+      let query = sb.from('masters').select('*, profiles(name, avatar_url)').eq('accepts_online', true);
+      if (_currentSpec) query = query.eq('specialty', _currentSpec);
+      const { data } = await query.order('rating', { ascending: false }).limit(30);
+      _allMasters = data || [];
+      renderMasters();
+    }
+
+    function renderMasters() {
+      const q = _searchQuery.toLowerCase();
+      const filtered = q
+        ? _allMasters.filter(m => (m.profiles?.name||'').toLowerCase().includes(q) || (m.specialty||'').toLowerCase().includes(q))
+        : _allMasters;
+      document.getElementById('masters-count').textContent = `${filtered.length} мастеров`;
+      const list = document.getElementById('masters-list');
+      if (!filtered.length) {
+        list.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><h4>Мастера не найдены</h4><p>Попробуйте другой запрос</p></div>`;
+        return;
+      }
+      list.innerHTML = filtered.map(m => {
+        const name   = m.profiles?.name || 'Мастер';
+        const rating = m.rating > 0 ? `★ ${m.rating.toFixed(1)} · ${m.reviews_count} отзывов` : 'Нет отзывов';
+        const specLabels = { beauty:'Бьюти', barber:'Барбер', trainer:'Тренер', nail:'Ногти', massage:'Массаж' };
+        const specLabel = specLabels[m.specialty] || m.specialty || 'Мастер';
+        const avatar = m.profiles?.avatar_url
+          ? `<div class="mini-avatar" style="width:52px;height:52px;background-image:url(${m.profiles.avatar_url});background-size:cover;background-position:center;"></div>`
+          : `<div class="mini-avatar gradient" style="width:52px;height:52px;font-size:22px;">${name.charAt(0)}</div>`;
+        return `<a class="master-card" href="p.html?u=${encodeURIComponent(m.username||m.id)}">
+          ${avatar}
+          <div class="info">
+            <div class="m-name">${name}</div>
+            <div class="m-spec">${specLabel}</div>
+            <div class="m-rating">${rating}</div>
+          </div>
+          <div class="m-cta">Записаться ›</div>
+        </a>`;
+      }).join('');
+    }
+
+    async function loadMyBookings() {
+      if (!_profile) return;
+      const { data } = await sb.from('bookings').select('*, masters(id, username, profiles(name))')
+        .eq('client_id', _profile.id).order('date_iso', { ascending: false });
+      _myBookings = data || [];
+      const upcoming = bookingsByDate(_myBookings, 'upcoming').length;
+      document.getElementById('bookings-summary').textContent = `${upcoming} предстоящих`;
+      renderMyBookings(document.querySelector('#view-bookings .tab.active')?.dataset.filter || 'upcoming');
+    }
+
+    function renderMyBookings(filter) {
+      const list = document.getElementById('my-bookings-list');
+      const sorted = bookingsByDate(_myBookings, filter).sort((a,b) => filter === 'past' ? (a.date_iso < b.date_iso ? 1 : -1) : (a.date_iso > b.date_iso ? 1 : -1));
+      if (!sorted.length) {
+        list.innerHTML = `<div class="empty"><div class="empty-icon">📅</div><h4>Записей нет</h4><p>Найдите мастера и запишитесь онлайн</p></div>`;
+        return;
+      }
+      list.innerHTML = sorted.map(b => {
+        const masterName = b.masters?.profiles?.name || 'Мастер';
+        const status = isToday(b.date_iso) ? 'today' : isFuture(b.date_iso) ? 'upcoming' : 'past';
+        const label  = { today:'сегодня', upcoming:'предстоит', past:'прошло' }[status];
+        return `<div class="row-item">
+          <div class="mini-avatar gradient">${masterName.charAt(0)}</div>
+          <div class="meta">
+            <div class="title">${masterName}</div>
+            <div class="sub">${b.service_name} · ${b.date_iso}, ${b.time}</div>
+          </div>
+          <div class="meta" style="text-align:right;flex:0 0 auto;">
+            <div class="price">${fmt$(b.service_price)}</div>
+            <span class="chip-status ${status}">${label}</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    (async () => {
+      const auth = await requireAuth('client');
+      if (!auth) return;
+      _profile = auth.profile;
+
+      const hr = new Date().getHours();
+      document.getElementById('greet').textContent = hr < 12 ? 'Доброе утро' : hr < 18 ? 'Добрый день' : 'Добрый вечер';
+      document.getElementById('user-name').textContent = _profile.name || _profile.email;
+
+      // Profile view
+      document.getElementById('cl-avatar').textContent  = (_profile.name||'?').charAt(0).toUpperCase();
+      document.getElementById('cl-name').textContent    = _profile.name || '—';
+      document.getElementById('cl-email').textContent   = _profile.email;
+      document.getElementById('cl-name-input').value    = _profile.name || '';
+      if (_profile.avatar_url) document.getElementById('cl-avatar').style.backgroundImage = `url(${_profile.avatar_url})`;
+
+      document.getElementById('save-profile-btn').addEventListener('click', async () => {
+        const name = document.getElementById('cl-name-input').value.trim();
+        await sb.from('profiles').update({ name }).eq('id', _profile.id);
+        _profile.name = name;
+        document.getElementById('cl-name').textContent  = name;
+        document.getElementById('user-name').textContent = name || _profile.email;
+        toast('Сохранено', { icon:'✓' });
+      });
+      document.getElementById('logout-btn').addEventListener('click', signOut);
+      document.getElementById('logout-profile-btn').addEventListener('click', signOut);
+
+      // Search
+      document.getElementById('search-input').addEventListener('input', e => {
+        _searchQuery = e.target.value; renderMasters();
+      });
+
+      // Specialty chips
+      document.querySelectorAll('.chat-suggestion-chip[data-spec]').forEach(chip => {
+        chip.addEventListener('click', () => {
+          document.querySelectorAll('.chat-suggestion-chip[data-spec]').forEach(c => c.classList.remove('active-chip'));
+          chip.classList.add('active-chip');
+          _currentSpec = chip.dataset.spec;
+          loadMasters();
+        });
+      });
+
+      // Tab switching for my bookings
+      document.querySelectorAll('#view-bookings .tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('#view-bookings .tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          renderMyBookings(tab.dataset.filter);
+        });
+      });
+
+      await loadMasters();
+
+      // Render tab bar with routing
+      _renderTabBar([
+        { key:'home',       label:'Главная',  href:'#home',     icon:Icons.home },
+        { key:'mybookings', label:'Записи',   href:'#bookings', icon:Icons.calendar },
+        { key:'profile',    label:'Профиль',  href:'#profile',  icon:Icons.user },
+      ], 'home', {});
+
+      // Handle hash navigation
+      const navigate = () => {
+        const hash = location.hash.replace('#','') || 'home';
+        setView(hash);
+        document.querySelectorAll('.tabbar a').forEach(a => {
+          a.classList.toggle('active', a.getAttribute('href') === '#'+hash);
+        });
+        if (hash === 'bookings') loadMyBookings();
+      };
+      window.addEventListener('hashchange', navigate);
+      navigate();
+    })();
+  </script>
+</body>
+</html>

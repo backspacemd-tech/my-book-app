@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0A0A0A" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="apple-touch-icon-512.png">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BookMe" />
+  <title>BookMe — услуги</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <a class="icon-btn-circle" href="master.html" aria-label="Назад">←</a>
+      <h1>Услуги</h1>
+      <button class="icon-btn-circle" id="add-btn" aria-label="Добавить">+</button>
+    </header>
+    <section class="hero" style="padding-bottom:14px;">
+      <h2>Прайс-лист</h2>
+      <p id="summary">—</p>
+    </section>
+    <section class="section">
+      <div class="list" id="list"></div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script>
+    let _masterId, _services = [];
+
+    async function load() {
+      const { data } = await sb.from('services').select('*').eq('master_id', _masterId).order('created_at');
+      _services = data || [];
+      render();
+    }
+
+    function render() {
+      const avg = _services.length ? Math.round(_services.reduce((s,x) => s+x.price,0)/_services.length) : 0;
+      document.getElementById('summary').textContent = _services.length
+        ? `${_services.length} услуг · средняя цена ${fmt$(avg)}`
+        : 'Добавьте первую услугу';
+      const list = document.getElementById('list');
+      if (!_services.length) {
+        list.innerHTML = `<div class="empty"><div class="empty-icon">✦</div><h4>Добавьте первую услугу</h4><p>Клиенты увидят что вы предлагаете и сколько стоит</p></div>
+          <button class="btn btn-primary mt-16" onclick="openForm()">+ Добавить услугу</button>`;
+        return;
+      }
+      list.innerHTML = _services.map(s => `
+        <div class="row-item clickable" data-id="${s.id}">
+          <div class="meta"><div class="title">${s.name}</div><div class="sub">${s.duration} мин</div></div>
+          <div class="meta" style="text-align:right;flex:0 0 auto;"><div class="price">${fmt$(s.price)}</div></div>
+        </div>`).join('');
+      list.querySelectorAll('.row-item').forEach(row => row.addEventListener('click', () => openForm(row.dataset.id)));
+    }
+
+    window.openForm = function(id) {
+      const s = id ? _services.find(x => x.id === id) : null;
+      openSheet(`
+        <h3>${s ? 'Редактировать' : 'Новая'} услуга</h3>
+        <p class="muted" style="margin:0 0 14px;font-size:14px;">${s ? 'Измените параметры' : 'Название, цена и длительность'}</p>
+        <div class="field"><label>Название</label><input id="s-name" type="text" placeholder="Маникюр" value="${s ? s.name.replace(/"/g,'&quot;') : ''}" /></div>
+        <div class="field-row">
+          <div class="field"><label>Цена, $</label><input id="s-price" type="number" min="0" step="1" placeholder="35" value="${s ? s.price : ''}" /></div>
+          <div class="field"><label>Мин.</label><input id="s-dur" type="number" min="5" step="5" placeholder="60" value="${s ? s.duration : ''}" /></div>
+        </div>
+        <div class="btn-row mt-12">
+          <button class="btn btn-secondary" onclick="closeSheet()">Отмена</button>
+          <button class="btn btn-primary" id="s-save">${s ? 'Сохранить' : 'Добавить'}</button>
+        </div>
+        ${s ? `<button class="btn btn-danger mt-12" id="s-del">Удалить услугу</button>` : ''}
+      `);
+      document.getElementById('s-save').addEventListener('click', async () => {
+        const name     = document.getElementById('s-name').value.trim();
+        const price    = parseInt(document.getElementById('s-price').value, 10);
+        const duration = parseInt(document.getElementById('s-dur').value, 10);
+        if (!name || !price || !duration) { toast('Заполните все поля'); return; }
+        if (s) await sb.from('services').update({ name, price, duration }).eq('id', s.id);
+        else   await sb.from('services').insert({ master_id: _masterId, name, price, duration });
+        closeSheet(); await load(); toast(s ? 'Сохранено' : 'Услуга добавлена', { icon:'✓' });
+      });
+      document.getElementById('s-del')?.addEventListener('click', async () => {
+        await sb.from('services').delete().eq('id', s.id);
+        closeSheet(); await load(); toast('Услуга удалена');
+      });
+    };
+
+    (async () => {
+      const auth = await requireAuth('master');
+      if (!auth) return;
+      _masterId = auth.profile.id;
+      document.getElementById('add-btn').addEventListener('click', () => openForm());
+      await load();
+      renderMasterTabBar('services');
+    })();
+  </script>
+</body>
+</html>

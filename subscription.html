@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0A0A0A" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="apple-touch-icon-512.png">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BookMe" />
+  <title>Master — подписка</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app no-nav">
+    <header class="topbar">
+      <a class="icon-btn-circle" href="profile.html" aria-label="Назад">←</a>
+      <h1 id="title">Подписка</h1>
+      <span class="right-spacer"></span>
+    </header>
+
+    <!-- ============= Plans view ============= -->
+    <div id="plans-view">
+      <section class="hero">
+        <h2>Откройте больше<br/>возможностей</h2>
+        <p>Безлимит записей, аналитика и брендинг. Отмена в любой момент.</p>
+      </section>
+
+      <!-- Текущий план -->
+      <div class="trial-banner" id="status-banner">
+        <div class="ico">⏱</div>
+        <div class="text">
+          <strong id="status-title">Пробный период</strong>
+          <span id="status-sub">Осталось 7 дней</span>
+        </div>
+      </div>
+
+      <!-- Toggle Monthly / Yearly -->
+      <div class="center mt-20">
+        <div class="plan-toggle" id="toggle">
+          <div class="opt active" data-period="monthly">В месяц</div>
+          <div class="opt" data-period="yearly">В год <span class="save">−25%</span></div>
+        </div>
+      </div>
+
+      <!-- Plan cards -->
+      <section class="section" style="margin-top: 0;">
+        <div class="list" id="plans"></div>
+      </section>
+
+      <p class="auth-footer" style="padding: 18px 20px 0;">
+        Безопасная оплата · Stripe · отмена в один клик
+      </p>
+    </div>
+
+    <!-- ============= Checkout view ============= -->
+    <div id="checkout-view" hidden>
+      <section class="hero" style="padding-top: 4px;">
+        <h2 id="checkout-title">Оформление</h2>
+        <p id="checkout-sub">—</p>
+      </section>
+
+      <section class="section">
+        <div class="card">
+          <div class="flex-between" style="padding-bottom: 12px; border-bottom: 1px solid var(--border);">
+            <span class="muted" style="font-size: 13px;">Тариф</span>
+            <span style="font-weight: 600; font-size: 14px;" id="r-plan">—</span>
+          </div>
+          <div class="flex-between" style="padding: 12px 0; border-bottom: 1px solid var(--border);">
+            <span class="muted" style="font-size: 13px;">Период</span>
+            <span style="font-weight: 600; font-size: 14px;" id="r-period">—</span>
+          </div>
+          <div class="flex-between" style="padding-top: 12px;">
+            <span class="muted" style="font-size: 13px;">К оплате сегодня</span>
+            <span style="font-weight: 700; font-size: 16px;" id="r-total">—</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3 class="section-title" style="font-size:13px; color: var(--text-2); text-transform: uppercase; letter-spacing:.06em; margin: 0 4px 10px; font-weight:600;">Карта</h3>
+        <div class="card">
+          <div class="field">
+            <label for="cc-num">Номер карты</label>
+            <input id="cc-num" class="card-input" type="text" inputmode="numeric"
+                   placeholder="4242 4242 4242 4242" autocomplete="cc-number" maxlength="19" />
+          </div>
+          <div class="field">
+            <label for="cc-name">Имя на карте</label>
+            <input id="cc-name" type="text" placeholder="ANNA SOKOLOVA" autocomplete="cc-name"
+                   style="text-transform: uppercase;" />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="cc-exp">Срок (MM/YY)</label>
+              <input id="cc-exp" class="card-input" type="text" inputmode="numeric"
+                     placeholder="12/28" maxlength="5" autocomplete="cc-exp" />
+            </div>
+            <div class="field" style="margin-bottom: 0;">
+              <label for="cc-cvv">CVV</label>
+              <input id="cc-cvv" class="card-input" type="text" inputmode="numeric"
+                     placeholder="123" maxlength="4" autocomplete="cc-csc" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="sticky-cta">
+        <button class="btn btn-primary" id="pay-btn">Оплатить —</button>
+        <div style="height: 8px;"></div>
+        <button class="btn btn-ghost" id="back-to-plans">← Выбрать другой тариф</button>
+      </div>
+    </div>
+
+    <!-- ============= Success view ============= -->
+    <div id="success-view" hidden>
+      <div class="success">
+        <div class="success-icon">✓</div>
+        <h2>Подписка активирована</h2>
+        <p>Спасибо! Все Pro-функции открыты</p>
+      </div>
+      <div class="section">
+        <div class="card">
+          <div class="flex-between" style="padding-bottom: 12px; border-bottom: 1px solid var(--border);">
+            <span class="muted" style="font-size: 13px;">Тариф</span>
+            <span style="font-weight: 600; font-size: 14px;" id="ok-plan">—</span>
+          </div>
+          <div class="flex-between" style="padding: 12px 0; border-bottom: 1px solid var(--border);">
+            <span class="muted" style="font-size: 13px;">Следующее списание</span>
+            <span style="font-weight: 600; font-size: 14px;" id="ok-next">—</span>
+          </div>
+          <div class="flex-between" style="padding-top: 12px;">
+            <span class="muted" style="font-size: 13px;">Сумма</span>
+            <span style="font-weight: 700; font-size: 16px;" id="ok-total">—</span>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <a class="btn btn-primary" href="dashboard.html">Перейти в дашборд</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script>
+    let auth = null;
+    let master = null;
+    let info = null;
+    let period = 'monthly';
+    let selectedPlan = null;
+
+    function getPlanInfo(masterData) {
+      const plan = masterData?.plan || 'trial';
+      const nextBilling = masterData?.next_billing || null;
+      const trialEnds = masterData?.trial_ends || null;
+      const today = new Date().toISOString().slice(0, 10);
+      const daysLeft = trialEnds && trialEnds >= today ? Math.max(0, Math.ceil((new Date(trialEnds) - new Date()) / 86400000)) : 0;
+      const isPaid = plan === 'pro' || plan === 'studio';
+      const label = plan === 'trial' ? 'Trial' : plan === 'free' ? 'Free' : plan === 'pro' ? 'Pro' : 'Studio';
+      return { plan, nextBilling, trialEnds, daysLeft, isPaid, label };
+    }
+
+
+    // Тарифы
+    const PLANS = [
+      {
+        id: 'free',
+        name: 'Free',
+        priceMonthly: 0,
+        priceYearly: 0,
+        features: [
+          'До 5 записей в месяц',
+          'Личная ссылка master.app/username',
+          'Базовый профиль',
+        ],
+        ctaIdle: 'Текущий план',
+        featured: false,
+      },
+      {
+        id: 'pro',
+        name: 'Pro',
+        priceMonthly: 12,
+        priceYearly: 108, // $9/mo equivalent
+        badge: 'Популярный',
+        features: [
+          'Безлимит записей',
+          'Аналитика и графики',
+          'Без брендинга Master',
+          'SMS-напоминания клиентам',
+          'QR-код и кастомная обложка',
+        ],
+        ctaIdle: 'Выбрать Pro',
+        featured: true,
+      },
+      {
+        id: 'studio',
+        name: 'Studio',
+        priceMonthly: 29,
+        priceYearly: 261, // $21.75/mo equivalent
+        features: [
+          'Всё из Pro',
+          'Команда до 5 мастеров',
+          'Кастомный домен',
+          'Приоритетная поддержка',
+          'Экспорт в Google Calendar',
+        ],
+        ctaIdle: 'Выбрать Studio',
+        featured: false,
+      },
+    ];
+
+    function renderStatus() {
+      const banner = document.getElementById('status-banner');
+      if (!info) return;
+      if (info.isPaid) {
+        banner.querySelector('.ico').textContent = '★';
+        document.getElementById('status-title').textContent = `Тариф ${info.label} активен`;
+        document.getElementById('status-sub').textContent = 'Спасибо, что с нами';
+      } else if (info.plan === 'trial') {
+        banner.querySelector('.ico').textContent = '⏳';
+        document.getElementById('status-title').textContent = 'Пробный период';
+        document.getElementById('status-sub').textContent =
+          info.daysLeft === 0
+            ? 'Истёк — выберите тариф'
+            : `Осталось ${info.daysLeft} ${info.daysLeft === 1 ? 'день' : info.daysLeft < 5 ? 'дня' : 'дней'}`;
+      } else {
+        banner.querySelector('.ico').textContent = '⚡';
+        document.getElementById('status-title').textContent = 'Free';
+        document.getElementById('status-sub').textContent = 'Лимит 5 записей в месяц';
+      }
+    }
+
+    function renderPlans() {
+      const wrap = document.getElementById('plans');
+      wrap.innerHTML = PLANS.map((p) => {
+        const price = period === 'monthly' ? p.priceMonthly : p.priceYearly;
+        const sub = p.id === 'free'
+          ? 'Навсегда бесплатно'
+          : period === 'monthly'
+            ? 'списывается ежемесячно'
+            : `${fmt$(Math.round(p.priceYearly / 12))}/мес · списывается раз в год`;
+        const isCurrent = info?.plan === p.id;
+        return `
+          <div class="plan-card ${p.featured ? 'featured' : ''} ${isCurrent ? 'current' : ''}">
+            ${p.badge ? `<span class="plan-badge">${p.badge}</span>` : ''}
+            <div class="plan-name">${p.name.toUpperCase()}</div>
+            <div class="plan-price">${fmt$(price)}<span class="per">${p.id === 'free' ? '' : period === 'monthly' ? '/мес' : '/год'}</span></div>
+            <div class="plan-price-sub">${sub}</div>
+            <ul class="plan-features">
+              ${p.features.map((f) => `<li>${f}</li>`).join('')}
+            </ul>
+            <button class="plan-cta" data-id="${p.id}">${isCurrent ? 'Текущий план' : p.ctaIdle}</button>
+          </div>
+        `;
+      }).join('');
+      wrap.querySelectorAll('.plan-cta').forEach((btn) => {
+        btn.addEventListener('click', () => onSelect(btn.dataset.id));
+      });
+    }
+
+    async function onSelect(id) {
+      const plan = PLANS.find((p) => p.id === id);
+      if (!plan) return;
+      if (plan.id === 'free') {
+        await sb.from('masters').update({ plan: 'free', next_billing: null, trial_ends: null }).eq('id', auth.profile.id);
+        master.plan = 'free';
+        master.next_billing = null;
+        master.trial_ends = null;
+        info = getPlanInfo(master);
+        renderStatus();
+        renderPlans();
+        toast('Тариф изменён на Free', { icon: '✓' });
+        return;
+      }
+      selectedPlan = plan;
+      const total = period === 'monthly' ? plan.priceMonthly : plan.priceYearly;
+
+      document.getElementById('checkout-title').textContent = `${plan.name} · оформление`;
+      document.getElementById('checkout-sub').textContent = period === 'monthly' ? 'Ежемесячная подписка' : 'Годовая подписка · экономия 25%';
+      document.getElementById('r-plan').textContent = plan.name;
+      document.getElementById('r-period').textContent = period === 'monthly' ? 'Ежемесячно' : 'Раз в год';
+      document.getElementById('r-total').textContent = fmt$(total);
+      document.getElementById('pay-btn').textContent = `Оплатить ${fmt$(total)}`;
+
+      document.getElementById('plans-view').hidden = true;
+      document.getElementById('checkout-view').hidden = false;
+      window.scrollTo(0, 0);
+    }
+
+    document.querySelectorAll('.plan-toggle .opt').forEach((opt) => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.plan-toggle .opt').forEach((o) => o.classList.remove('active'));
+        opt.classList.add('active');
+        period = opt.dataset.period;
+        renderPlans();
+      });
+    });
+
+    document.getElementById('back-to-plans').addEventListener('click', () => {
+      document.getElementById('checkout-view').hidden = true;
+      document.getElementById('plans-view').hidden = false;
+    });
+
+    // ---- Маски карты ----
+    const ccNum = document.getElementById('cc-num');
+    ccNum.addEventListener('input', () => {
+      let v = ccNum.value.replace(/\D/g, '').slice(0, 16);
+      ccNum.value = v.replace(/(.{4})/g, '$1 ').trim();
+    });
+    const ccExp = document.getElementById('cc-exp');
+    ccExp.addEventListener('input', () => {
+      let v = ccExp.value.replace(/\D/g, '').slice(0, 4);
+      if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2);
+      ccExp.value = v;
+    });
+    const ccCvv = document.getElementById('cc-cvv');
+    ccCvv.addEventListener('input', () => {
+      ccCvv.value = ccCvv.value.replace(/\D/g, '').slice(0, 4);
+    });
+
+    document.getElementById('pay-btn').addEventListener('click', async () => {
+      const num = ccNum.value.replace(/\s/g, '');
+      const name = document.getElementById('cc-name').value.trim();
+      const exp = document.getElementById('cc-exp').value;
+      const cvv = document.getElementById('cc-cvv').value;
+      if (num.length < 13) { toast('Введите номер карты'); return; }
+      if (!name) { toast('Имя на карте'); return; }
+      if (!/^\d{2}\/\d{2}$/.test(exp)) { toast('Срок MM/YY'); return; }
+      if (cvv.length < 3) { toast('CVV'); return; }
+      if (!selectedPlan) { toast('Выберите тариф'); return; }
+
+      const total = period === 'monthly' ? selectedPlan.priceMonthly : selectedPlan.priceYearly;
+      const nextDate = new Date();
+      if (period === 'yearly') nextDate.setFullYear(nextDate.getFullYear() + 1);
+      else nextDate.setMonth(nextDate.getMonth() + 1);
+
+      await sb.from('masters').update({
+        plan: selectedPlan.id,
+        next_billing: nextDate.toISOString(),
+        trial_ends: null,
+      }).eq('id', auth.profile.id);
+
+      master.plan = selectedPlan.id;
+      master.next_billing = nextDate.toISOString();
+      master.trial_ends = null;
+      info = getPlanInfo(master);
+      renderStatus();
+
+      const months = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+      document.getElementById('ok-plan').textContent = `${selectedPlan.name} · ${period === 'monthly' ? 'месяц' : 'год'}`;
+      document.getElementById('ok-next').textContent = `${nextDate.getDate()} ${months[nextDate.getMonth()]} ${nextDate.getFullYear()}`;
+      document.getElementById('ok-total').textContent = fmt$(total);
+
+      document.getElementById('checkout-view').hidden = true;
+      document.getElementById('success-view').hidden = false;
+      window.scrollTo(0, 0);
+    });
+
+    (async () => {
+      auth = await requireAuth('master');
+      if (!auth) return;
+      const { data } = await sb.from('masters').select('*').eq('id', auth.profile.id).single();
+      master = data || { plan: 'trial', next_billing: null, trial_ends: null };
+      info = getPlanInfo(master);
+      renderStatus();
+      renderPlans();
+    })();
+  </script>
+</body>
+</html>

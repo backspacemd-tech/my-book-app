@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0A0A0A" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="apple-touch-icon-512.png">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BookMe" />
+  <title>BookMe — главная</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <span class="left-spacer"></span>
+      <h1>Главная</h1>
+      <button class="icon-btn-circle" id="logout-btn" title="Выйти" aria-label="Выйти">⎋</button>
+    </header>
+
+    <section class="hero">
+      <div class="greet" id="greet">Добрый день</div>
+      <h2 id="user-name">—</h2>
+      <p>Сегодня <span id="today-count">0</span> записей · впереди <span id="upcoming-count">0</span></p>
+    </section>
+
+    <div id="trial-banner-slot"></div>
+
+    <section class="stats">
+      <a class="stat dark link" href="analytics.html">
+        <div class="stat-label">Выручка за 7 дней ›</div>
+        <div class="stat-value" id="revenue">$0</div>
+        <div class="stat-trend" id="revenue-trend">за неделю</div>
+      </a>
+      <a class="stat link" href="analytics.html">
+        <div class="stat-label">Записей всего ›</div>
+        <div class="stat-value" id="total-bookings">0</div>
+        <div class="stat-trend muted" id="total-trend">за всё время</div>
+      </a>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h3>Активность недели</h3>
+        <a href="analytics.html">Подробнее →</a>
+      </div>
+      <a class="card" href="analytics.html" style="display:block;text-decoration:none;color:inherit;">
+        <div class="flex-between" style="margin-bottom:6px;">
+          <div class="muted" style="font-size:13px;">Записей в день</div>
+          <div style="font-size:13px;font-weight:600;" id="week-total">0 за неделю</div>
+        </div>
+        <div class="barchart" id="barchart"></div>
+        <div style="height:22px;"></div>
+      </a>
+    </section>
+
+    <section style="margin-top:20px;">
+      <div class="link-card" id="link-card">
+        <div class="label">Моя ссылка</div>
+        <div class="url" id="public-url">bookme.app/—</div>
+        <div class="actions">
+          <button class="pill solid" id="copy-btn">⧉ Скопировать</button>
+          <button class="pill" id="share-btn">↗ Поделиться</button>
+          <a class="pill" id="open-btn" href="#" target="_blank">→ Открыть</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h3>Быстрые действия</h3></div>
+      <div class="btn-row">
+        <a class="btn btn-secondary" href="services.html">+ Услуга</a>
+        <a class="btn btn-secondary" href="analytics.html">Аналитика</a>
+        <a class="btn btn-secondary" href="chat.html">✦ ИИ</a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h3>Сегодня</h3>
+        <a href="bookings.html">Все →</a>
+      </div>
+      <div class="list" id="today-list"></div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script>
+    (async () => {
+      const auth = await requireAuth('master');
+      if (!auth) return;
+      const { session, profile } = auth;
+
+      // Greeting
+      const hr = new Date().getHours();
+      document.getElementById('greet').textContent = hr < 5 ? 'Доброй ночи' : hr < 12 ? 'Доброе утро' : hr < 18 ? 'Добрый день' : 'Добрый вечер';
+      document.getElementById('user-name').textContent = profile.name || profile.email;
+
+      // Load master record
+      const { data: master } = await sb.from('masters').select('*').eq('id', profile.id).single();
+
+      // Trial banner
+      if (master && master.plan === 'trial') {
+        const ms = new Date(master.trial_ends) - new Date();
+        const days = Math.max(0, Math.ceil(ms / 86400000));
+        document.getElementById('trial-banner-slot').innerHTML = `
+          <div class="trial-banner">
+            <div class="ico">★</div>
+            <div class="text"><strong>Пробный период</strong>${days === 0 ? 'Истёк — продлите доступ' : `Осталось ${days} ${days === 1 ? 'день' : days < 5 ? 'дня' : 'дней'}`}</div>
+            <a href="subscription.html">Выбрать тариф</a>
+          </div>`;
+      }
+
+      // Load bookings
+      const { data: bookings = [] } = await sb.from('bookings')
+        .select('*').eq('master_id', profile.id).eq('status', 'upcoming');
+      const stats = calcStats(bookings);
+
+      document.getElementById('today-count').textContent    = stats.todayCount;
+      document.getElementById('upcoming-count').textContent = stats.upcomingCount;
+      document.getElementById('revenue').textContent        = fmt$(stats.revenue7);
+      document.getElementById('revenue-trend').textContent  = stats.revenue7 > 0 ? `${fmt$(stats.revenue7)} за 7 дней` : 'нет записей';
+      document.getElementById('total-bookings').textContent = bookings.length;
+      document.getElementById('total-trend').textContent    = bookings.length ? `${bookings.length} клиентов` : 'за всё время';
+
+      // Bar chart
+      const days7 = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+      const maxC = Math.max(1, ...stats.weekData.map(d => d.count));
+      document.getElementById('barchart').innerHTML = stats.weekData.map(d => {
+        const dt = new Date(d.iso);
+        const h = Math.max(6, Math.round((d.count / maxC) * 100));
+        return `<div class="bar ${d.count === 0 ? 'muted' : ''}" style="height:${h}%"><span class="label">${days7[dt.getDay()]}</span></div>`;
+      }).join('');
+      document.getElementById('week-total').textContent = `${stats.weekData.reduce((s,d) => s+d.count,0)} за неделю`;
+
+      // Public link
+      const username = master?.username || profile.id;
+      document.getElementById('public-url').textContent = getPrettyUrl(username);
+      const pubUrl = getPublicUrl(username);
+      document.getElementById('open-btn').href = pubUrl;
+      document.getElementById('copy-btn').addEventListener('click', () => copyToClipboard(pubUrl));
+      document.getElementById('share-btn').addEventListener('click', async () => {
+        const ok = await shareLink(pubUrl, 'Запись к ' + (profile.name || 'мастеру'));
+        if (!ok) {
+          openSheet(`<h3>Поделиться ссылкой</h3>
+            <div class="card center" style="font-family:monospace;font-size:14px;font-weight:600;word-break:break-all;">${getPrettyUrl(username)}</div>
+            <div class="btn-row mt-12">
+              <button class="btn btn-secondary" onclick="closeSheet()">Закрыть</button>
+              <button class="btn btn-primary" onclick="copyToClipboard('${pubUrl}');closeSheet()">Скопировать</button>
+            </div>`);
+        }
+      });
+
+      // Today's bookings
+      const todayB = bookingsByDate(bookings, 'today');
+      const todayList = document.getElementById('today-list');
+      if (!todayB.length) {
+        todayList.innerHTML = `<div class="empty"><div class="empty-icon">☕</div><h4>Сегодня свободно</h4><p>Поделитесь ссылкой — клиенты запишутся сами</p></div>`;
+      } else {
+        todayList.innerHTML = todayB.map(b => `
+          <div class="row-item">
+            <div class="mini-avatar gradient">${b.client_name.charAt(0)}</div>
+            <div class="meta"><div class="title">${b.client_name}</div><div class="sub">${b.service_name}</div></div>
+            <div class="meta" style="text-align:right;flex:0 0 auto;">
+              <div class="title" style="font-size:14px;">${b.time}</div>
+              <span class="chip-status today">сегодня</span>
+            </div>
+          </div>`).join('');
+      }
+
+      // Realtime subscription
+      sb.channel('master-home-bookings')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings', filter: `master_id=eq.${profile.id}` },
+          () => location.reload())
+        .subscribe();
+
+      document.getElementById('logout-btn').addEventListener('click', signOut);
+      renderMasterTabBar('home', { bookings: stats.todayCount || '' });
+    })();
+  </script>
+</body>
+</html>

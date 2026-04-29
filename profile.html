@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0A0A0A" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="apple-touch-icon-512.png">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BookMe" />
+  <title>BookMe — профиль</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <a class="icon-btn-circle" href="master.html" aria-label="Назад">←</a>
+      <h1>Профиль</h1>
+      <span class="right-spacer"></span>
+    </header>
+
+    <!-- Cover -->
+    <div class="cover-upload-area" id="cover-area" style="margin-top:8px;">
+      <div class="cover-label" id="cover-label">📷 Загрузить обложку</div>
+    </div>
+
+    <!-- Avatar + name -->
+    <section style="text-align:center;padding:10px 24px 4px;">
+      <div class="avatar-upload-wrap" id="avatar-wrap" style="margin:-44px auto 12px;">
+        <div class="mini-avatar gradient" id="avatar"
+          style="width:88px;height:88px;font-size:32px;border:4px solid var(--bg);box-sizing:content-box;background-size:cover;background-position:center;">?</div>
+        <div class="avatar-overlay">📷</div>
+      </div>
+      <div style="font-size:22px;font-weight:700;letter-spacing:-0.02em;" id="display-name">—</div>
+      <div class="muted" style="font-size:14px;" id="display-email">—</div>
+    </section>
+
+    <form id="profile-form" style="padding:14px 20px 0;">
+      <h3 class="section-title" style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 4px 10px;font-weight:600;">О мастере</h3>
+      <div class="card" style="margin-bottom:18px;">
+        <div class="field"><label for="f-name">Имя</label><input id="f-name" type="text" placeholder="Анна Соколова" /></div>
+        <div class="field"><label for="f-role">Специализация / город</label><input id="f-role" type="text" placeholder="Бьюти-мастер · Москва" /></div>
+        <div class="field" style="margin-bottom:0;"><label for="f-desc">Описание</label><textarea id="f-desc" placeholder="Расскажите клиентам о себе"></textarea></div>
+      </div>
+
+      <h3 class="section-title" style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 4px 10px;font-weight:600;">Личная ссылка</h3>
+      <div class="card" style="margin-bottom:18px;">
+        <div class="field" style="margin-bottom:0;">
+          <label for="f-username">Username</label>
+          <input id="f-username" type="text" pattern="[a-z0-9_]{3,20}" placeholder="anna" />
+          <div class="field-hint">bookme.app/<span id="username-preview">username</span></div>
+        </div>
+      </div>
+
+      <h3 class="section-title" style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 4px 10px;font-weight:600;">Подписка</h3>
+      <a class="row-item clickable" href="subscription.html" style="margin-bottom:18px;text-decoration:none;">
+        <div class="mini-avatar gradient" id="plan-icon">★</div>
+        <div class="meta"><div class="title" id="plan-title">—</div><div class="sub" id="plan-sub">—</div></div>
+        <div class="muted" style="font-size:18px;">›</div>
+      </a>
+
+      <h3 class="section-title" style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 4px 10px;font-weight:600;">Инструменты</h3>
+      <div class="card" style="margin-bottom:18px;padding:0;">
+        <a class="row-item clickable" href="chat.html" style="border:none;box-shadow:none;background:transparent;text-decoration:none;">
+          <div class="mini-avatar gradient" style="font-size:18px;">✦</div>
+          <div class="meta"><div class="title" style="font-size:15px;">ИИ-ассистент</div><div class="sub">Советы, анализ записей</div></div>
+          <div class="muted" style="font-size:18px;">›</div>
+        </a>
+        <div style="border-top:1px solid var(--border);"></div>
+        <a class="row-item clickable" href="analytics.html" style="border:none;box-shadow:none;background:transparent;text-decoration:none;">
+          <div class="mini-avatar gradient" style="font-size:18px;">📊</div>
+          <div class="meta"><div class="title" style="font-size:15px;">Аналитика</div><div class="sub">Выручка, записи, средний чек</div></div>
+          <div class="muted" style="font-size:18px;">›</div>
+        </a>
+      </div>
+
+      <h3 class="section-title" style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 4px 10px;font-weight:600;">Настройки</h3>
+      <div class="card" style="margin-bottom:18px;padding:0;">
+        <div class="row-item" style="border:none;box-shadow:none;background:transparent;">
+          <div class="meta"><div class="title" style="font-size:15px;">Принимаю записи онлайн</div><div class="sub">Клиенты увидят кнопку «Записаться»</div></div>
+          <label class="switch"><input type="checkbox" id="f-online" /><span class="slider"></span></label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+      <div style="height:12px;"></div>
+      <a class="btn btn-secondary" href="master.html">Отмена</a>
+    </form>
+
+    <!-- Portfolio -->
+    <section class="section" style="margin-top:24px;">
+      <div class="section-head"><h3>Портфолио</h3><span class="muted" style="font-size:13px;" id="portfolio-count">0 фото</span></div>
+      <div class="portfolio-grid" id="portfolio-grid"></div>
+    </section>
+
+    <!-- Team -->
+    <section class="section" style="margin-top:24px;">
+      <div class="section-head"><h3>Команда</h3><span class="muted" style="font-size:13px;" id="team-count">0 мастеров</span></div>
+      <div class="list" id="team-list"></div>
+      <div style="height:10px;"></div>
+      <button class="team-add-btn" id="team-add-btn">
+        <div class="mini-avatar" style="font-size:20px;background:var(--surface-2);">+</div>
+        <span>Добавить мастера</span>
+      </button>
+    </section>
+
+    <section style="padding:24px 20px;">
+      <button class="btn btn-danger" id="logout-btn">Выйти из аккаунта</button>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script>
+    let _profile, _master;
+
+    (async () => {
+      const auth = await requireAuth('master');
+      if (!auth) return;
+      const { profile } = auth;
+      _profile = profile;
+
+      const { data: master } = await sb.from('masters').select('*').eq('id', profile.id).single();
+      _master = master || {};
+
+      // Render avatar
+      function renderAvatar() {
+        const el = document.getElementById('avatar');
+        if (profile.avatar_url) { el.style.backgroundImage = `url(${profile.avatar_url})`; el.textContent = ''; }
+        else { el.style.backgroundImage = ''; el.textContent = (profile.name||'?').charAt(0).toUpperCase(); }
+      }
+      renderAvatar();
+
+      // Render cover
+      function renderCover() {
+        const area = document.getElementById('cover-area');
+        const lbl  = document.getElementById('cover-label');
+        area.querySelector('img')?.remove();
+        if (_master.cover_url) {
+          const img = Object.assign(document.createElement('img'), { src: _master.cover_url });
+          img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
+          area.insertBefore(img, lbl);
+          lbl.textContent = '✎ Сменить обложку';
+        } else { lbl.textContent = '📷 Загрузить обложку'; }
+      }
+      renderCover();
+
+      // Fill form
+      document.getElementById('display-name').textContent  = profile.name || 'Без имени';
+      document.getElementById('display-email').textContent = profile.email;
+      document.getElementById('f-name').value     = profile.name || '';
+      document.getElementById('f-role').value     = _master.specialty || '';
+      document.getElementById('f-username').value = _master.username || '';
+      document.getElementById('f-desc').value     = _master.description || '';
+      document.getElementById('f-online').checked = _master.accepts_online !== false;
+      document.getElementById('username-preview').textContent = _master.username || 'username';
+
+      // Subscription info
+      const plan = _master.plan || 'trial';
+      const planLabels = { trial:'Пробный период', free:'Free', pro:'Pro', studio:'Studio' };
+      document.getElementById('plan-title').textContent = planLabels[plan] || plan;
+      document.getElementById('plan-sub').textContent = _master.next_billing
+        ? `Следующее списание: ${new Date(_master.next_billing).toLocaleDateString('ru-RU')}`
+        : (plan === 'trial' ? 'Нажмите для выбора тарифа' : 'Активная подписка');
+
+      // Username preview
+      document.getElementById('f-username').addEventListener('input', e => {
+        e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g,'');
+        document.getElementById('username-preview').textContent = e.target.value || 'username';
+      });
+
+      // Avatar upload
+      const avatarInput = Object.assign(document.createElement('input'), { type:'file', accept:'image/*', style:'display:none' });
+      document.body.appendChild(avatarInput);
+      document.getElementById('avatar-wrap').addEventListener('click', () => avatarInput.click());
+      avatarInput.addEventListener('change', async () => {
+        const file = avatarInput.files[0]; if (!file) return;
+        if (file.size > 3*1024*1024) { toast('Фото слишком большое (макс. 3 МБ)'); return; }
+        toast('Загружаем…');
+        const url = await uploadFile('avatars', `${profile.id}/avatar`, file);
+        if (!url) return;
+        await sb.from('profiles').update({ avatar_url: url }).eq('id', profile.id);
+        profile.avatar_url = url; renderAvatar();
+        toast('Фото обновлено', { icon:'✓' });
+      });
+
+      // Cover upload
+      const coverInput = Object.assign(document.createElement('input'), { type:'file', accept:'image/*', style:'display:none' });
+      document.body.appendChild(coverInput);
+      document.getElementById('cover-area').addEventListener('click', () => coverInput.click());
+      coverInput.addEventListener('change', async () => {
+        const file = coverInput.files[0]; if (!file) return;
+        if (file.size > 5*1024*1024) { toast('Фото слишком большое (макс. 5 МБ)'); return; }
+        toast('Загружаем…');
+        const url = await uploadFile('avatars', `${profile.id}/cover`, file);
+        if (!url) return;
+        await sb.from('masters').update({ cover_url: url }).eq('id', profile.id);
+        _master.cover_url = url; renderCover();
+        toast('Обложка обновлена', { icon:'✓' });
+      });
+
+      // Save form
+      document.getElementById('profile-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        const name        = document.getElementById('f-name').value.trim();
+        const specialty   = document.getElementById('f-role').value.trim();
+        const username    = document.getElementById('f-username').value.trim().toLowerCase();
+        const description = document.getElementById('f-desc').value.trim();
+        const accepts     = document.getElementById('f-online').checked;
+        if (username && !/^[a-z0-9_]{3,20}$/.test(username)) { toast('Username: 3–20 символов, латиница/цифры'); return; }
+        const [r1, r2] = await Promise.all([
+          sb.from('profiles').update({ name }).eq('id', profile.id),
+          sb.from('masters').update({ specialty, description, accepts_online: accepts, ...(username ? { username } : {}) }).eq('id', profile.id),
+        ]);
+        if (r1.error || r2.error) { toast('Ошибка сохранения'); return; }
+        document.getElementById('display-name').textContent = name || 'Без имени';
+        toast('Профиль сохранён', { icon:'✓' });
+        setTimeout(() => window.location.href = 'master.html', 600);
+      });
+
+      // Portfolio
+      const portfolioInput = Object.assign(document.createElement('input'), { type:'file', accept:'image/*', style:'display:none' });
+      document.body.appendChild(portfolioInput);
+
+      async function renderPortfolio() {
+        const { data: photos = [] } = await sb.from('portfolio').select('*').eq('master_id', profile.id).order('created_at', { ascending: false });
+        document.getElementById('portfolio-count').textContent = `${photos.length} фото`;
+        const grid = document.getElementById('portfolio-grid');
+        grid.innerHTML = photos.map(p => `
+          <div class="portfolio-item">
+            <img src="${p.url}" alt="" />
+            <button class="portfolio-del" data-id="${p.id}">×</button>
+          </div>`).join('') + (photos.length < 12 ? `<div class="portfolio-add" id="port-add">+</div>` : '');
+        grid.querySelectorAll('.portfolio-del').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            await sb.from('portfolio').delete().eq('id', btn.dataset.id);
+            renderPortfolio();
+          });
+        });
+        document.getElementById('port-add')?.addEventListener('click', () => portfolioInput.click());
+      }
+      portfolioInput.addEventListener('change', async () => {
+        const file = portfolioInput.files[0]; if (!file) return;
+        toast('Загружаем…');
+        const url = await uploadFile('portfolio', `${profile.id}/${Date.now()}`, file);
+        if (!url) return;
+        await sb.from('portfolio').insert({ master_id: profile.id, url });
+        portfolioInput.value = '';
+        renderPortfolio(); toast('Фото добавлено', { icon:'✓' });
+      });
+      renderPortfolio();
+
+      // Team
+      async function renderTeam() {
+        const { data: team = [] } = await sb.from('team_members').select('*').eq('owner_id', profile.id).order('created_at');
+        document.getElementById('team-count').textContent = `${team.length} мастеров`;
+        const list = document.getElementById('team-list');
+        list.innerHTML = team.map((m,i) => `
+          <div class="team-card" data-id="${m.id}">
+            <div class="mini-avatar gradient">${(m.name||'?').charAt(0).toUpperCase()}</div>
+            <div class="meta"><div class="title">${m.name||'Без имени'}</div><div class="sub">${m.role||'Мастер'}</div></div>
+            <div class="muted">›</div>
+          </div>`).join('');
+        list.querySelectorAll('.team-card').forEach(card => {
+          const member = team.find(m => m.id === card.dataset.id);
+          card.addEventListener('click', () => openTeamForm(member));
+        });
+      }
+
+      function openTeamForm(member = null) {
+        const isNew = !member;
+        openSheet(`
+          <h3>${isNew ? 'Новый мастер' : 'Редактировать'}</h3>
+          <div class="field"><label>Имя</label><input id="tm-name" type="text" placeholder="Елена" value="${member?.name||''}" /></div>
+          <div class="field"><label>Специализация</label><input id="tm-role" type="text" placeholder="Маникюр" value="${member?.role||''}" /></div>
+          <div class="btn-row mt-12">
+            <button class="btn btn-secondary" onclick="closeSheet()">Отмена</button>
+            <button class="btn btn-primary" id="tm-save">Сохранить</button>
+          </div>
+          ${!isNew ? `<button class="btn btn-danger mt-12" id="tm-del">Удалить</button>` : ''}
+        `);
+        document.getElementById('tm-save').addEventListener('click', async () => {
+          const name = document.getElementById('tm-name').value.trim();
+          const role = document.getElementById('tm-role').value.trim();
+          if (!name) { toast('Укажите имя'); return; }
+          if (isNew) await sb.from('team_members').insert({ owner_id: profile.id, name, role });
+          else await sb.from('team_members').update({ name, role }).eq('id', member.id);
+          closeSheet(); renderTeam(); toast(isNew ? 'Мастер добавлен' : 'Сохранено', { icon:'✓' });
+        });
+        document.getElementById('tm-del')?.addEventListener('click', async () => {
+          await sb.from('team_members').delete().eq('id', member.id);
+          closeSheet(); renderTeam(); toast('Мастер удалён');
+        });
+      }
+      document.getElementById('team-add-btn').addEventListener('click', () => openTeamForm());
+      renderTeam();
+
+      document.getElementById('logout-btn').addEventListener('click', signOut);
+      renderMasterTabBar('profile');
+    })();
+  </script>
+</body>
+</html>
