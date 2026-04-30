@@ -3,158 +3,254 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"/>
-  <meta name="theme-color" content="#0A0A0A"/>
-  <title>BookMe · Сообщения</title>
+  <meta name="theme-color" content="#0E1621"/>
+  <title>BookMe · Чат</title>
   <link rel="stylesheet" href="styles.css"/>
   <link rel="manifest" href="manifest.json"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 </head>
-<body>
-  <div class="chat-page">
-    <!-- Topbar -->
-    <div class="chat-topbar">
-      <button class="icon-btn-circle" onclick="history.back()" style="display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-      </button>
-      <div class="ct-avatar" id="ct-avatar">?</div>
-      <div class="ct-info">
-        <div class="ct-name" id="ct-name">—</div>
-        <div class="ct-status" id="ct-status">онлайн</div>
-      </div>
+<body style="background:#0E1621;">
+<div class="tg-page">
+
+  <!-- Header -->
+  <div class="tg-header">
+    <button class="tg-back" id="back-btn" aria-label="Назад">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="tg-av" id="tg-av">?</div>
+    <div class="tg-hinfo">
+      <div class="tg-hname"  id="tg-name">—</div>
+      <div class="tg-hstatus" id="tg-status">в сети</div>
     </div>
+    <button class="tg-more" id="more-btn" aria-label="Ещё">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+    </button>
+  </div>
 
-    <!-- Messages -->
-    <div class="chat-msgs" id="msgs"></div>
-
-    <!-- Input -->
-    <div class="chat-input-wrap">
-      <textarea id="msg-input" placeholder="Сообщение…" rows="1"></textarea>
-      <button class="chat-send" id="send-btn" disabled>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-      </button>
+  <!-- Messages -->
+  <div class="tg-msgs" id="tg-msgs">
+    <div class="tg-empty" id="tg-empty">
+      <div class="tg-empty-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <p>Начните переписку</p>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js"></script>
-  <script src="app.js"></script>
-  <script>
-    (async () => {
-      const params    = new URLSearchParams(location.search);
-      const masterId  = params.get('master');
-      const partnerId = params.get('partner'); // the other person's profile id
+  <!-- Input -->
+  <div class="tg-input-bar">
+    <button class="tg-attach" id="attach-btn" aria-label="Вложение">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+    </button>
+    <div class="tg-input-wrap">
+      <textarea id="msg-input" placeholder="Сообщение…" rows="1"></textarea>
+    </div>
+    <button class="tg-send-btn" id="send-btn" disabled aria-label="Отправить">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
 
-      const auth = await requireAuth();
-      if (!auth) return;
-      const me = auth.profile;
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>
+(async () => {
+  const params   = new URLSearchParams(location.search);
+  const masterId = params.get('master');
+  const partnerId= params.get('partner');
 
-      // Determine who we're chatting with
-      const otherId = masterId === me.id ? partnerId : masterId;
-      const mId     = masterId;
+  const auth = await requireAuth();
+  if (!auth) return;
+  const me = auth.profile;
 
-      if (!otherId || !mId) {
-        document.querySelector('.chat-msgs').innerHTML =
-          '<div class="chat-empty"><p>Неверная ссылка на чат</p></div>';
-        return;
+  const otherId = (me.id === masterId) ? partnerId : masterId;
+  const mId     = masterId;
+
+  if (!otherId || !mId) {
+    document.getElementById('tg-msgs').innerHTML =
+      '<div class="tg-system">Неверные параметры чата</div>';
+    return;
+  }
+
+  // Load partner profile
+  const { data: other } = await sb.from('profiles')
+    .select('name, avatar_url').eq('id', otherId).single();
+  const otherName    = other?.name || 'Пользователь';
+  const otherInitial = otherName.charAt(0).toUpperCase();
+
+  document.getElementById('tg-name').textContent   = otherName;
+  document.getElementById('tg-av').textContent     = otherInitial;
+  if (other?.avatar_url) {
+    document.getElementById('tg-av').innerHTML =
+      `<img src="${other.avatar_url}" alt="${otherName}"/>`;
+  }
+
+  // Back
+  document.getElementById('back-btn').addEventListener('click', () => {
+    if (history.length > 1) history.back();
+    else location.href = '/';
+  });
+
+  // More menu
+  document.getElementById('more-btn').addEventListener('click', () => {
+    openSheet(`
+      <h3>${otherName}</h3>
+      <div class="list mt-12">
+        <div class="row-item clickable" onclick="closeSheet();location.href='/p?u=${otherId}'">
+          <div class="meta"><div class="title">Профиль</div></div>
+        </div>
+      </div>
+      <button class="btn btn-secondary mt-12" onclick="closeSheet()">Закрыть</button>
+    `);
+  });
+
+  let _msgs = [];
+
+  async function loadMsgs() {
+    const { data } = await sb.from('messages')
+      .select('*').eq('master_id', mId)
+      .or(`and(from_id.eq.${me.id},to_id.eq.${otherId}),and(from_id.eq.${otherId},to_id.eq.${me.id})`)
+      .order('created_at', { ascending: true });
+    _msgs = data || [];
+    render(_msgs);
+
+    // Mark as read
+    const unread = _msgs.filter(m => m.to_id === me.id && !m.read_at).map(m => m.id);
+    if (unread.length) {
+      await sb.from('messages').update({ read_at: new Date().toISOString() }).in('id', unread);
+    }
+  }
+
+  function fmtTime(iso) {
+    return new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  }
+  function fmtDate(iso) {
+    const d = new Date(iso);
+    const today = new Date();
+    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    if (d.toDateString() === today.toDateString()) return 'Сегодня';
+    if (d.toDateString() === yesterday.toDateString()) return 'Вчера';
+    return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+  }
+  function esc(t) {
+    return String(t)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\n/g,'<br>');
+  }
+
+  function render(msgs) {
+    const container = document.getElementById('tg-msgs');
+    const empty     = document.getElementById('tg-empty');
+
+    if (!msgs.length) {
+      if (empty) empty.style.display = 'flex';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
+
+    const wasAtBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight < 60;
+
+    let html = '';
+    let lastDate   = '';
+    let lastFromId = '';
+
+    msgs.forEach((m, i) => {
+      const isMine  = m.from_id === me.id;
+      const dateKey = m.created_at.slice(0, 10);
+      const isFirst = lastFromId !== m.from_id;
+      const isLast  = !msgs[i + 1] || msgs[i + 1].from_id !== m.from_id;
+      lastFromId    = m.from_id;
+
+      // Date separator
+      if (dateKey !== lastDate) {
+        html += `<div class="tg-date"><span>${fmtDate(m.created_at)}</span></div>`;
+        lastDate = dateKey;
       }
 
-      // Load other person's profile
-      const { data: other } = await sb.from('profiles').select('name, avatar_url').eq('id', otherId).single();
-      const otherName = other?.name || 'Пользователь';
-      const otherInitial = otherName.charAt(0).toUpperCase();
-      document.getElementById('ct-name').textContent   = otherName;
-      document.getElementById('ct-avatar').textContent = otherInitial;
+      // Read tick SVG
+      const tick = isMine ? `
+        <span class="tg-check">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            ${m.read_at
+              ? '<polyline points="1 12 8 19 23 4"/><polyline points="7 12 14 19 23 4" style="opacity:.6"/>'
+              : '<polyline points="2 12 8 18 22 4"/>'}
+          </svg>
+        </span>` : '';
 
-      // Load messages
-      async function loadMessages() {
-        const { data: msgs = [] } = await sb.from('messages')
-          .select('*').eq('master_id', mId)
-          .or(`from_id.eq.${me.id},to_id.eq.${me.id}`)
-          .order('created_at', { ascending: true });
-        renderMessages(msgs);
+      const avHtml = !isMine
+        ? `<div class="tg-av-sm">${otherInitial}</div>`
+        : '';
 
-        // Mark unread messages as read
-        const unread = msgs.filter(m => m.to_id === me.id && !m.read_at).map(m => m.id);
-        if (unread.length) {
-          await sb.from('messages').update({ read_at: new Date().toISOString() }).in('id', unread);
-        }
-      }
+      const rowClass = [
+        'tg-row',
+        isMine ? 'me' : 'them',
+        isFirst ? 'first' : '',
+        isLast  ? 'tail'  : 'no-av',
+      ].join(' ');
 
-      function renderMessages(msgs) {
-        const container = document.getElementById('msgs');
-        if (!msgs.length) {
-          container.innerHTML = `<div class="chat-empty">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            <p>Напишите первое сообщение</p>
-          </div>`;
-          return;
-        }
-
-        let lastDate = '';
-        container.innerHTML = msgs.map(m => {
-          const isMine = m.from_id === me.id;
-          const dt = new Date(m.created_at);
-          const dateKey = dt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
-          const timeStr = dt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-          const dateHdr = dateKey !== lastDate
-            ? `<div class="msg-date-sep">${dateKey}</div>` : '';
-          lastDate = dateKey;
-          const readMark = isMine ? `<div class="msg-read">${m.read_at ? '✓✓' : '✓'}</div>` : '';
-          return `${dateHdr}
-            <div class="msg-row ${isMine ? 'me' : 'them'}">
-              ${!isMine ? `<div class="m-av">${otherInitial}</div>` : ''}
-              <div>
-                <div class="msg-bubble">${escapeHtml(m.text)}</div>
-                ${readMark}
+      html += `
+        <div class="${rowClass}" style="margin-top:${isFirst && i > 0 ? '8' : '1'}px;">
+          ${avHtml}
+          <div>
+            <div class="tg-bubble">
+              ${esc(m.text)}
+              <div class="tg-meta">
+                <span class="tg-time">${fmtTime(m.created_at)}</span>
+                ${tick}
               </div>
-              <div class="msg-time">${timeStr}</div>
-            </div>`;
-        }).join('');
-        container.scrollTop = container.scrollHeight;
-      }
+            </div>
+          </div>
+        </div>`;
+    });
 
-      function escapeHtml(t) {
-        return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-                .replace(/\n/g,'<br>');
-      }
+    container.innerHTML = html;
+    if (wasAtBottom || msgs.length <= 20) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }
 
-      await loadMessages();
+  await loadMsgs();
 
-      // Send message
-      const input = document.getElementById('msg-input');
-      const btn   = document.getElementById('send-btn');
+  // Input auto-resize
+  const input  = document.getElementById('msg-input');
+  const sendBtn= document.getElementById('send-btn');
 
-      input.addEventListener('input', () => {
-        btn.disabled = !input.value.trim();
-        input.style.height = 'auto';
-        input.style.height = Math.min(input.scrollHeight, 120) + 'px';
-      });
-      input.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
-      });
-      btn.addEventListener('click', send);
+  input.addEventListener('input', () => {
+    sendBtn.disabled = !input.value.trim();
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 140) + 'px';
+  });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey && window.innerWidth > 600) {
+      e.preventDefault(); doSend();
+    }
+  });
+  sendBtn.addEventListener('click', doSend);
 
-      async function send() {
-        const text = input.value.trim();
-        if (!text) return;
-        btn.disabled = true; input.value = ''; input.style.height = 'auto';
-        await sb.from('messages').insert({
-          from_id:   me.id,
-          to_id:     otherId,
-          master_id: mId,
-          text,
-        });
-      }
+  async function doSend() {
+    const text = input.value.trim();
+    if (!text) return;
+    sendBtn.disabled = true;
+    input.value = ''; input.style.height = 'auto';
+    await sb.from('messages').insert({
+      from_id: me.id, to_id: otherId, master_id: mId, text
+    });
+  }
 
-      // Realtime
-      sb.channel(`chat-${mId}-${me.id}`)
-        .on('postgres_changes', {
-          event: 'INSERT', schema: 'public', table: 'messages',
-          filter: `master_id=eq.${mId}`,
-        }, async () => { await loadMessages(); })
-        .subscribe();
-    })();
-  </script>
+  // Realtime
+  sb.channel(`tg-${mId}`)
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'messages',
+      filter: `master_id=eq.${mId}`,
+    }, async () => { await loadMsgs(); })
+    .subscribe();
+
+  // Status: show typing hint
+  document.getElementById('tg-status').textContent = 'в сети';
+})();
+</script>
 </body>
 </html>

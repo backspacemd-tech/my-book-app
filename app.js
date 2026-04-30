@@ -375,10 +375,10 @@ const Icons = {
 // ── Tab Bars ─────────────────────────────────────────────────
 function renderMasterTabBar(activeKey, badgeMap = {}) {
   _renderTabBar([
-    { key: 'home',     label: 'Главная', href: '/master',    icon: Icons.home },
-    { key: 'bookings', label: 'Записи',  href: '/bookings',  icon: Icons.calendar },
-    { key: 'services', label: 'Услуги',  href: '/services',  icon: Icons.services },
-    { key: 'profile',  label: 'Профиль', href: '/profile',   icon: Icons.user },
+    { key: 'home',     label: 'Главная',  href: '/master',   icon: Icons.home },
+    { key: 'bookings', label: 'Записи',   href: '/bookings', icon: Icons.calendar },
+    { key: 'clients',  label: 'Клиенты',  href: '/clients',  icon: Icons.user },
+    { key: 'profile',  label: 'Профиль',  href: '/profile',  icon: Icons.edit },
   ], activeKey, badgeMap);
 }
 
