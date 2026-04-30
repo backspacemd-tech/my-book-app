@@ -236,10 +236,10 @@
 
     // Google OAuth — only if configured
     const googleOAuth = async () => {
-      const isProd = location.hostname === 'bookme-app.online';
+      const isProd = location.hostname.endsWith('bookme-app.online');
       const redirectTo = isProd
         ? 'https://bookme-app.online/dashboard'
-        : window.location.origin + '/dashboard.html';
+        : window.location.origin + '/dashboard';
       const { error } = await sb.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo },

@@ -16,7 +16,7 @@
 <body>
   <div class="app">
     <header class="topbar">
-      <a class="icon-btn-circle" href="master.html" aria-label="Назад" style="display:inline-flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></a>
+      <a class="icon-btn-circle" href="/master" aria-label="Назад" style="display:inline-flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></a>
       <span></span>
       <span class="right-spacer"></span>
     </header>
@@ -69,7 +69,7 @@
         <div class="field" style="margin-bottom:0;">
           <label for="f-username">Username</label>
           <input id="f-username" type="text" pattern="[a-z0-9_]{3,20}" placeholder="anna" />
-          <div class="field-hint">bookme-app.online/p.html?u=<span id="username-preview">username</span></div>
+          <div class="field-hint"><span id="username-hint-origin">bookme-app.online</span>/<span id="username-preview">username</span></div>
         </div>
       </div>
 
@@ -92,7 +92,7 @@
 
       <!-- Подписка -->
       <p class="section-label">Подписка</p>
-      <a class="row-item clickable" href="subscription.html" style="margin-bottom:18px;text-decoration:none;">
+      <a class="row-item clickable" href="/subscription" style="margin-bottom:18px;text-decoration:none;">
         <div class="mini-avatar gradient" id="plan-icon" style="font-size:0;display:inline-flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
         <div class="meta"><div class="title" id="plan-title">—</div><div class="sub" id="plan-sub">—</div></div>
         <div class="muted" style="font-size:18px;">›</div>
@@ -101,13 +101,13 @@
       <!-- Инструменты -->
       <p class="section-label">Инструменты</p>
       <div class="card" style="margin-bottom:18px;padding:0;">
-        <a class="row-item clickable" href="chat.html" style="border:none;box-shadow:none;background:transparent;text-decoration:none;">
+        <a class="row-item clickable" href="/chat" style="border:none;box-shadow:none;background:transparent;text-decoration:none;">
           <div class="mini-avatar gradient" style="font-size:0;display:inline-flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></div>
           <div class="meta"><div class="title" style="font-size:15px;">ИИ-ассистент</div><div class="sub">Советы, анализ записей</div></div>
           <div class="muted" style="font-size:18px;">›</div>
         </a>
         <div style="border-top:1px solid var(--border);"></div>
-        <a class="row-item clickable" href="analytics.html" style="border:none;box-shadow:none;background:transparent;text-decoration:none;">
+        <a class="row-item clickable" href="/analytics" style="border:none;box-shadow:none;background:transparent;text-decoration:none;">
           <div class="mini-avatar gradient" style="font-size:0;display:inline-flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 16 4-4 4 4 4-6"/></svg></div>
           <div class="meta"><div class="title" style="font-size:15px;">Аналитика</div><div class="sub">Выручка, записи, средний чек</div></div>
           <div class="muted" style="font-size:18px;">›</div>
@@ -116,7 +116,7 @@
 
       <button type="submit" class="btn btn-primary">Сохранить изменения</button>
       <div style="height:10px;"></div>
-      <a class="btn btn-secondary" href="master.html">Отмена</a>
+      <a class="btn btn-secondary" href="/master">Отмена</a>
     </form>
 
     <!-- Portfolio -->
@@ -199,6 +199,7 @@
       document.getElementById('f-username').value = _master.username || '';
       document.getElementById('f-desc').value     = _master.description || '';
       document.getElementById('f-online').checked = _master.accepts_online !== false;
+      document.getElementById('username-hint-origin').textContent = window.location.host;
       document.getElementById('username-preview').textContent = _master.username || 'username';
 
       // Specialty chips
@@ -222,7 +223,7 @@
       // Master → client mode
       document.getElementById('client-mode-btn').addEventListener('click', () => {
         sessionStorage.setItem('bm_client_mode', '1');
-        window.location.href = 'client.html';
+        window.location.href = '/client';
       });
 
       // Subscription info
@@ -287,7 +288,7 @@
         if (r1.error || r2.error) { toast('Ошибка сохранения'); return; }
         document.getElementById('display-name').textContent = name || 'Без имени';
         toast('Профиль сохранён', { icon:'✓' });
-        setTimeout(() => window.location.href = 'master.html', 600);
+        setTimeout(() => window.location.href = '/master', 600);
       });
 
       // Portfolio

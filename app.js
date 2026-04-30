@@ -369,6 +369,7 @@ const Icons = {
   image:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
   edit:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
   phone:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 14.89a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 2.97 4h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 11.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 19z"/></svg>`,
+  msg:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
 };
 
 // ── Tab Bars ─────────────────────────────────────────────────
@@ -624,6 +625,140 @@ function skCard(lines = 2) {
   </div>`;
 }
 function skCards(n = 3) { return Array.from({ length: n }, () => skCard()).join(''); }
+
+// ── Image Cropper (pure JS canvas) ───────────────────────────
+class ImageCropper {
+  constructor({ aspectRatio = 1, cropSize = 280, onDone, onCancel } = {}) {
+    this.ar = aspectRatio; this.cropSize = cropSize;
+    this.onDone = onDone; this.onCancel = onCancel;
+    this._build();
+  }
+
+  _build() {
+    this.el = document.createElement('div');
+    this.el.className = 'crop-overlay';
+    this.el.innerHTML = `
+      <div class="crop-header">
+        <button class="crop-btn-cancel" id="_cc">Отмена</button>
+        <h3>Кадрирование</h3>
+        <button class="crop-btn-apply" id="_ca" style="flex:none;padding:8px 18px;font-size:14px;">Готово</button>
+      </div>
+      <div class="crop-canvas-wrap">
+        <canvas id="_cv"></canvas>
+        <div class="crop-frame" id="_cf">
+          <div class="crop-corner-bl"></div><div class="crop-corner-br"></div>
+        </div>
+      </div>
+      <p class="crop-hint">Перемещайте и масштабируйте фото</p>
+      <div class="crop-actions" style="padding-bottom:calc(20px + var(--safe-bottom));">
+        <button class="crop-btn-cancel" id="_cc2">Отмена</button>
+        <button class="crop-btn-apply" id="_ca2">Применить</button>
+      </div>`;
+    document.body.appendChild(this.el);
+    this.canvas = this.el.querySelector('#_cv');
+    this.ctx    = this.canvas.getContext('2d');
+    this.frame  = this.el.querySelector('#_cf');
+    this.el.querySelectorAll('#_cc,#_cc2').forEach(b => b.onclick = () => this._cancel());
+    this.el.querySelectorAll('#_ca,#_ca2').forEach(b => b.onclick = () => this._apply());
+  }
+
+  open(file) {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { this._img = img; URL.revokeObjectURL(url); this._init(); };
+    img.src = url;
+  }
+
+  _init() {
+    const wrap  = this.el.querySelector('.crop-canvas-wrap');
+    const W = wrap.clientWidth, H = wrap.clientHeight;
+    this.canvas.width  = W; this.canvas.height = H;
+    const cs = Math.min(this.cropSize, W * .85, H * .85);
+    this.cropW = cs; this.cropH = cs / this.ar;
+    this.cropX = (W - this.cropW) / 2; this.cropY = (H - this.cropH) / 2;
+
+    const scale = Math.max(this.cropW / this._img.width, this.cropH / this._img.height) * 1.05;
+    this.sc = scale;
+    this.ox = W / 2; this.oy = H / 2;
+
+    this.frame.style.cssText = `width:${this.cropW}px;height:${this.cropH}px;left:${this.cropX}px;top:${this.cropY}px;`;
+    this._bindEvents(); this._draw();
+  }
+
+  _draw() {
+    const c = this.canvas, img = this._img;
+    c.width = c.width; // clear
+    this.ctx.drawImage(img, this.ox - img.width * this.sc / 2, this.oy - img.height * this.sc / 2,
+      img.width * this.sc, img.height * this.sc);
+  }
+
+  _bindEvents() {
+    const c = this.canvas;
+    // Mouse
+    let down = false, lx, ly;
+    c.addEventListener('mousedown', e => { down = true; lx = e.clientX; ly = e.clientY; });
+    window.addEventListener('mousemove', e => {
+      if (!down) return;
+      this.ox += e.clientX - lx; this.oy += e.clientY - ly;
+      lx = e.clientX; ly = e.clientY; this._draw();
+    });
+    window.addEventListener('mouseup', () => down = false);
+    c.addEventListener('wheel', e => { e.preventDefault(); this.sc *= e.deltaY < 0 ? 1.07 : 0.93; this._draw(); }, { passive: false });
+
+    // Touch
+    let touches = [], pinchDist0 = 0, sc0 = 0;
+    c.addEventListener('touchstart', e => {
+      e.preventDefault(); touches = [...e.touches];
+      if (e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        pinchDist0 = Math.hypot(dx, dy); sc0 = this.sc;
+      }
+    }, { passive: false });
+    c.addEventListener('touchmove', e => {
+      e.preventDefault();
+      if (e.touches.length === 1 && touches.length === 1) {
+        this.ox += e.touches[0].clientX - touches[0].clientX;
+        this.oy += e.touches[0].clientY - touches[0].clientY;
+      } else if (e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        this.sc = sc0 * Math.hypot(dx, dy) / pinchDist0;
+      }
+      touches = [...e.touches]; this._draw();
+    }, { passive: false });
+  }
+
+  _apply() {
+    const out = document.createElement('canvas');
+    out.width = this.cropW; out.height = this.cropH;
+    const ctx = out.getContext('2d');
+    const img = this._img;
+    const sx = (this.cropX - this.ox + img.width * this.sc / 2) / this.sc;
+    const sy = (this.cropY - this.oy + img.height * this.sc / 2) / this.sc;
+    const sw = this.cropW / this.sc, sh = this.cropH / this.sc;
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, this.cropW, this.cropH);
+    out.toBlob(blob => { this._destroy(); this.onDone && this.onDone(blob); }, 'image/jpeg', .92);
+  }
+
+  _cancel() { this._destroy(); this.onCancel && this.onCancel(); }
+  _destroy() { this.el.remove(); }
+}
+
+// Open file picker → crop → callback(blob)
+function pickAndCrop({ aspectRatio = 1, cropSize = 280, accept = 'image/*' } = {}) {
+  return new Promise((resolve, reject) => {
+    const inp = Object.assign(document.createElement('input'), { type: 'file', accept, style: 'display:none' });
+    document.body.appendChild(inp);
+    inp.onchange = () => {
+      const file = inp.files[0]; inp.remove();
+      if (!file) return reject(new Error('cancelled'));
+      new ImageCropper({ aspectRatio, cropSize, onDone: resolve, onCancel: () => reject(new Error('cancelled')) }).open(file);
+    };
+    inp.oncancel = () => { inp.remove(); reject(new Error('cancelled')); };
+    inp.click();
+  });
+}
 
 // ── Supabase Storage upload helper ───────────────────────────
 async function uploadFile(bucket, path, file) {

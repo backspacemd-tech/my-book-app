@@ -68,7 +68,7 @@
   <script>
     // Check if already logged in as admin
     if (sessionStorage.getItem('bm_admin') === 'true') {
-      location.replace('admin.html');
+      location.replace('/admin');
     }
 
     const ADMIN_LOGIN = 'vasea';
@@ -83,7 +83,7 @@
       if (login === ADMIN_LOGIN && pass === ADMIN_PASS) {
         sessionStorage.setItem('bm_admin', 'true');
         btn.textContent = 'Входим…'; btn.disabled = true;
-        setTimeout(() => location.replace('admin.html'), 300);
+        setTimeout(() => location.replace('/admin'), 300);
       } else {
         err.style.display = 'block';
         document.getElementById('a-pass').value = '';

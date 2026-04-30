@@ -151,7 +151,7 @@
         username: username || user.username,
         serviceId: selectedId,
       });
-      window.location.href = `booking.html?u=${encodeURIComponent(username || user.username)}&s=${selectedId}`;
+      window.location.href = `/booking?u=${encodeURIComponent(username || user.username)}&s=${selectedId}`;
     });
   </script>
 </body>

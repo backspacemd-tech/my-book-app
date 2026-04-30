@@ -93,7 +93,7 @@
       const params    = new URLSearchParams(location.search);
       const username  = params.get('u');
       const serviceId = params.get('s');
-      const backUrl   = `p.html?u=${encodeURIComponent(username)}`;
+      const backUrl   = `/p?u=${encodeURIComponent(username)}`;
 
       document.getElementById('back').href     = backUrl;
       document.getElementById('back-link').href = backUrl;
@@ -228,14 +228,14 @@
         sendPush(master.id, {
           title: 'Новая запись!',
           body:  `${clientName} — ${service.name}, ${selectedDate.label} в ${selectedTime}`,
-          url:   'bookings.html',
+          url:   '/bookings',
         });
         // Notify client (if logged in)
         if (session?.user?.id) {
           sendPush(session.user.id, {
             title: 'Запись подтверждена',
             body:  `${service.name}, ${selectedDate.label} в ${selectedTime}`,
-            url:   'client.html#bookings',
+            url:   '/client#bookings',
           });
         }
 

@@ -24,7 +24,7 @@
   <script>
     (async () => {
       const session = await getSession();
-      if (!session) { window.location.href = 'index.html'; return; }
+      if (!session) { window.location.href = '/'; return; }
       // Handle OAuth redirect: wait for profile trigger
       let profile = null;
       for (let i = 0; i < 5; i++) {
@@ -35,7 +35,7 @@
       if (!profile) {
         profile = await ensureProfile(session.user, { email: session.user.email, name: session.user.user_metadata?.name || undefined });
       }
-      if (!profile) { window.location.href = 'index.html'; return; }
+      if (!profile) { window.location.href = '/'; return; }
       redirectByRole(profile.role);
     })();
   </script>

@@ -107,9 +107,9 @@
   <script src="config.js"></script>
   <script src="app.js"></script>
   <script>
-    // Admin guard — must come through admin-login.html
+    // Admin guard — must come through /admin-login
     if (sessionStorage.getItem('bm_admin') !== 'true') {
-      location.replace('admin-login.html');
+      location.replace('/admin-login');
       throw new Error('not admin');
     }
     let _users = [], _news = [], _profile;
@@ -271,18 +271,18 @@
         if (!email) { toast('Укажите email'); return; }
         const { data, error } = await sb.from('invitations').insert({ email, role }).select().single();
         if (error) { toast('Ошибка: ' + error.message); return; }
-        const link = `${window.location.origin}/index.html?invite=${data.token}`;
+        const link = `${window.location.origin}/?invite=${data.token}`;
         await copyToClipboard(link);
         closeSheet(); toast('Ссылка скопирована!', { icon:'✓' });
       });
     };
 
     (async () => {
-      // Admin logged in via admin-login.html — no Supabase auth needed
+      // Admin logged in via /admin-login — no Supabase auth needed
       document.getElementById('admin-name').textContent = 'vasea';
       document.getElementById('logout-btn').addEventListener('click', () => {
         sessionStorage.removeItem('bm_admin');
-        location.replace('admin-login.html');
+        location.replace('/admin-login');
       });
       document.getElementById('add-news-btn')?.addEventListener('click', () => openNewsForm());
       document.getElementById('user-search')?.addEventListener('input', e => loadUsers(e.target.value));

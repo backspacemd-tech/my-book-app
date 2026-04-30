@@ -227,6 +227,7 @@
           const b = _myBookings.find(x => x.id === row.dataset.id); if (!b) return;
           const masterName = b.masters?.profiles?.name || 'Мастер';
           const canCancel  = b.status === 'upcoming' && isFuture(b.date_iso);
+          const chatUrl = `/messages?master=${b.master_id}&partner=${_profile.id}`;
           openSheet(`
             <h3>Запись</h3>
             <p class="muted" style="margin:0 0 14px;font-size:14px;">${b.date_iso}, ${b.time} · ${masterName}</p>
@@ -238,6 +239,10 @@
                 <div class="flex-between"><span class="muted" style="font-size:13px;">Стоимость</span><span style="font-weight:700;font-size:15px;">${fmt$(b.service_price)}</span></div>
               </div>
             </div>
+            <a href="${chatUrl}" class="btn btn-secondary" style="margin-bottom:10px;display:flex;gap:8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Написать мастеру
+            </a>
             ${canCancel ? `<button class="btn btn-danger" id="cl-cancel-btn">Отменить запись</button>` : ''}
             <button class="btn btn-secondary" style="margin-top:10px;" onclick="closeSheet()">Закрыть</button>
           `);

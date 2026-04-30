@@ -2,7 +2,7 @@
   "name": "BookMe — онлайн-запись",
   "short_name": "BookMe",
   "description": "Онлайн-запись для мастеров и клиентов",
-  "start_url": "/index.html",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

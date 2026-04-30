@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"/>
+  <meta name="theme-color" content="#0A0A0A"/>
+  <title>BookMe · Сообщения</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+</head>
+<body>
+  <div class="chat-page">
+    <!-- Topbar -->
+    <div class="chat-topbar">
+      <button class="icon-btn-circle" onclick="history.back()" style="display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <div class="ct-avatar" id="ct-avatar">?</div>
+      <div class="ct-info">
+        <div class="ct-name" id="ct-name">—</div>
+        <div class="ct-status" id="ct-status">онлайн</div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-msgs" id="msgs"></div>
+
+    <!-- Input -->
+    <div class="chat-input-wrap">
+      <textarea id="msg-input" placeholder="Сообщение…" rows="1"></textarea>
+      <button class="chat-send" id="send-btn" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script>
+    (async () => {
+      const params    = new URLSearchParams(location.search);
+      const masterId  = params.get('master');
+      const partnerId = params.get('partner'); // the other person's profile id
+
+      const auth = await requireAuth();
+      if (!auth) return;
+      const me = auth.profile;
+
+      // Determine who we're chatting with
+      const otherId = masterId === me.id ? partnerId : masterId;
+      const mId     = masterId;
+
+      if (!otherId || !mId) {
+        document.querySelector('.chat-msgs').innerHTML =
+          '<div class="chat-empty"><p>Неверная ссылка на чат</p></div>';
+        return;
+      }
+
+      // Load other person's profile
+      const { data: other } = await sb.from('profiles').select('name, avatar_url').eq('id', otherId).single();
+      const otherName = other?.name || 'Пользователь';
+      const otherInitial = otherName.charAt(0).toUpperCase();
+      document.getElementById('ct-name').textContent   = otherName;
+      document.getElementById('ct-avatar').textContent = otherInitial;
+
+      // Load messages
+      async function loadMessages() {
+        const { data: msgs = [] } = await sb.from('messages')
+          .select('*').eq('master_id', mId)
+          .or(`from_id.eq.${me.id},to_id.eq.${me.id}`)
+          .order('created_at', { ascending: true });
+        renderMessages(msgs);
+
+        // Mark unread messages as read
+        const unread = msgs.filter(m => m.to_id === me.id && !m.read_at).map(m => m.id);
+        if (unread.length) {
+          await sb.from('messages').update({ read_at: new Date().toISOString() }).in('id', unread);
+        }
+      }
+
+      function renderMessages(msgs) {
+        const container = document.getElementById('msgs');
+        if (!msgs.length) {
+          container.innerHTML = `<div class="chat-empty">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <p>Напишите первое сообщение</p>
+          </div>`;
+          return;
+        }
+
+        let lastDate = '';
+        container.innerHTML = msgs.map(m => {
+          const isMine = m.from_id === me.id;
+          const dt = new Date(m.created_at);
+          const dateKey = dt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+          const timeStr = dt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+          const dateHdr = dateKey !== lastDate
+            ? `<div class="msg-date-sep">${dateKey}</div>` : '';
+          lastDate = dateKey;
+          const readMark = isMine ? `<div class="msg-read">${m.read_at ? '✓✓' : '✓'}</div>` : '';
+          return `${dateHdr}
+            <div class="msg-row ${isMine ? 'me' : 'them'}">
+              ${!isMine ? `<div class="m-av">${otherInitial}</div>` : ''}
+              <div>
+                <div class="msg-bubble">${escapeHtml(m.text)}</div>
+                ${readMark}
+              </div>
+              <div class="msg-time">${timeStr}</div>
+            </div>`;
+        }).join('');
+        container.scrollTop = container.scrollHeight;
+      }
+
+      function escapeHtml(t) {
+        return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                .replace(/\n/g,'<br>');
+      }
+
+      await loadMessages();
+
+      // Send message
+      const input = document.getElementById('msg-input');
+      const btn   = document.getElementById('send-btn');
+
+      input.addEventListener('input', () => {
+        btn.disabled = !input.value.trim();
+        input.style.height = 'auto';
+        input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+      });
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+      });
+      btn.addEventListener('click', send);
+
+      async function send() {
+        const text = input.value.trim();
+        if (!text) return;
+        btn.disabled = true; input.value = ''; input.style.height = 'auto';
+        await sb.from('messages').insert({
+          from_id:   me.id,
+          to_id:     otherId,
+          master_id: mId,
+          text,
+        });
+      }
+
+      // Realtime
+      sb.channel(`chat-${mId}-${me.id}`)
+        .on('postgres_changes', {
+          event: 'INSERT', schema: 'public', table: 'messages',
+          filter: `master_id=eq.${mId}`,
+        }, async () => { await loadMessages(); })
+        .subscribe();
+    })();
+  </script>
+</body>
+</html>
