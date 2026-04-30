@@ -2,6 +2,17 @@
    BookMe — shared utilities (loaded after config.js)
    ============================================================ */
 
+// ── Normalize old .html URLs to clean paths ────────────────────
+(function normalizeHtmlUrl() {
+  const path = window.location.pathname;
+  if (!path.endsWith('.html')) return;
+  const clean = path === '/index.html' ? '/' : path.replace(/\.html$/, '');
+  const destination = clean + window.location.search + window.location.hash;
+  if (destination !== window.location.href) {
+    window.location.replace(destination);
+  }
+})();
+
 // ── Global error boundary ─────────────────────────────────────
 window.addEventListener('unhandledrejection', e => {
   const msg = e.reason?.message || String(e.reason);
@@ -102,15 +113,15 @@ async function ensureProfile(user, attrs = {}) {
 
 // Redirects to right dashboard by role
 function redirectByRole(role) {
-  const map = { admin: 'admin.html', master: 'master.html', client: 'client.html' };
-  window.location.href = map[role] || 'client.html';
+  const map = { admin: '/admin', master: '/master', client: '/client' };
+  window.location.href = map[role] || '/client';
 }
 
 // Guard: ensure session, return {session, profile}. Redirects if not authenticated.
 async function requireAuth(expectedRole = null) {
   let session;
   try { session = await getSession(); } catch { session = null; }
-  if (!session) { window.location.href = 'index.html'; return null; }
+  if (!session) { window.location.href = '/'; return null; }
 
   let profile;
   try {
@@ -120,9 +131,9 @@ async function requireAuth(expectedRole = null) {
     });
   } catch (e) {
     console.error('Profile load failed', e);
-    window.location.href = 'index.html'; return null;
+    window.location.href = '/'; return null;
   }
-  if (!profile) { window.location.href = 'index.html'; return null; }
+  if (!profile) { window.location.href = '/'; return null; }
 
   if (expectedRole && profile.role !== expectedRole && profile.role !== 'admin') {
     // Allow masters to enter client mode (to book services themselves)
@@ -130,8 +141,6 @@ async function requireAuth(expectedRole = null) {
       redirectByRole(profile.role); return null;
     }
   }
-  // Setup push silently in background
-  setTimeout(() => setupPush(profile.id), 2000);
   return { session, profile };
 }
 
@@ -157,7 +166,7 @@ async function navigateTo(url) {
 
 async function signOut() {
   await sb.auth.signOut();
-  await navigateTo('index.html');
+  await navigateTo('/');
 }
 
 // ── Toast notifications ──────────────────────────────────────
@@ -207,10 +216,9 @@ async function shareLink(url, title) {
 
 // ── Public URL helpers ───────────────────────────────────────
 function getPublicUrl(username) {
-  const base = window.location.origin + window.location.pathname.replace(/[^/]*$/, '');
-  return `${base}p.html?u=${encodeURIComponent(username)}`;
+  return `${window.location.origin}/${encodeURIComponent(username)}`;
 }
-function getPrettyUrl(username) { return `bookme.app/${username}`; }
+function getPrettyUrl(username) { return `${window.location.origin}/${username}`; }
 
 function setupAppNavigation() {
   document.body.addEventListener('click', (event) => {
@@ -251,7 +259,7 @@ function addAppBackButton() {
   back.addEventListener('click', (e) => {
     e.preventDefault();
     if (window.history.length > 1) window.history.back();
-    else window.location.href = 'index.html';
+    else window.location.href = '/';
   });
   topbar.insertBefore(back, topbar.firstChild);
 }
@@ -278,25 +286,32 @@ function _vapidKey() {
 }
 
 async function setupPush(userId) {
-  if (!('PushManager' in window) || !('Notification' in window)) return;
-  const reg = await navigator.serviceWorker.ready;
-  const perm = await Notification.requestPermission();
-  if (perm !== 'granted') return;
+  if (!('PushManager' in window) || !('Notification' in window)) {
+    console.log('[Push] not supported'); return;
+  }
   try {
-    const sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: _vapidKey(),
-    });
+    const reg  = await navigator.serviceWorker.ready;
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') { console.log('[Push] denied'); return; }
+
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: _vapidKey(),
+      });
+    }
     const json = sub.toJSON();
-    await sb.from('push_subscriptions').upsert({
-      user_id: userId,
+    const { error } = await sb.from('push_subscriptions').upsert({
+      user_id:  userId,
       endpoint: json.endpoint,
-      auth:    json.keys.auth,
-      p256dh:  json.keys.p256dh,
+      auth:     json.keys.auth,
+      p256dh:   json.keys.p256dh,
     }, { onConflict: 'user_id,endpoint' });
-    console.log('[Push] subscribed');
+    if (error) console.error('[Push] DB error:', error.message);
+    else console.log('[Push] subscribed OK for', userId);
   } catch (e) {
-    console.warn('[Push] subscribe failed', e);
+    console.error('[Push] failed:', e.message);
   }
 }
 
@@ -359,28 +374,28 @@ const Icons = {
 // ── Tab Bars ─────────────────────────────────────────────────
 function renderMasterTabBar(activeKey, badgeMap = {}) {
   _renderTabBar([
-    { key: 'home',     label: 'Главная', href: 'master.html',    icon: Icons.home },
-    { key: 'bookings', label: 'Записи',  href: 'bookings.html',  icon: Icons.calendar },
-    { key: 'services', label: 'Услуги',  href: 'services.html',  icon: Icons.services },
-    { key: 'profile',  label: 'Профиль', href: 'profile.html',   icon: Icons.user },
+    { key: 'home',     label: 'Главная', href: '/master',    icon: Icons.home },
+    { key: 'bookings', label: 'Записи',  href: '/bookings',  icon: Icons.calendar },
+    { key: 'services', label: 'Услуги',  href: '/services',  icon: Icons.services },
+    { key: 'profile',  label: 'Профиль', href: '/profile',   icon: Icons.user },
   ], activeKey, badgeMap);
 }
 
 function renderClientTabBar(activeKey, badgeMap = {}) {
   _renderTabBar([
-    { key: 'home',    label: 'Главная',   href: 'client.html',   icon: Icons.home },
-    { key: 'search',  label: 'Мастера',   href: 'client.html#search', icon: Icons.search },
-    { key: 'mybookings', label: 'Записи', href: 'client.html#bookings', icon: Icons.calendar },
-    { key: 'profile', label: 'Профиль',   href: 'client.html#profile',  icon: Icons.user },
+    { key: 'home',    label: 'Главная',   href: '/client',   icon: Icons.home },
+    { key: 'search',  label: 'Мастера',   href: '/client#search', icon: Icons.search },
+    { key: 'mybookings', label: 'Записи', href: '/client#bookings', icon: Icons.calendar },
+    { key: 'profile', label: 'Профиль',   href: '/client#profile',  icon: Icons.user },
   ], activeKey, badgeMap);
 }
 
 function renderAdminTabBar(activeKey, badgeMap = {}) {
   _renderTabBar([
-    { key: 'home',  label: 'Обзор',       href: 'admin.html',          icon: Icons.home },
-    { key: 'users', label: 'Польз-ли',    href: 'admin.html#users',    icon: Icons.user },
-    { key: 'news',  label: 'Новости',     href: 'admin.html#news',     icon: Icons.services },
-    { key: 'settings', label: 'Настройки',href: 'admin.html#settings', icon: Icons.admin },
+    { key: 'home',  label: 'Обзор',       href: '/admin',          icon: Icons.home },
+    { key: 'users', label: 'Польз-ли',    href: '/admin#users',    icon: Icons.user },
+    { key: 'news',  label: 'Новости',     href: '/admin#news',     icon: Icons.services },
+    { key: 'settings', label: 'Настройки',href: '/admin#settings', icon: Icons.admin },
   ], activeKey, badgeMap);
 }
 

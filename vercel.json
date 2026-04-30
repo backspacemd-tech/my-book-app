@@ -1,18 +1,13 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "rewrites": [
-    { "source": "/admin",       "destination": "/admin-login.html" },
-    { "source": "/admin-panel", "destination": "/admin-login.html" }
-  ],
   "redirects": [
-    { "source": "/index",       "destination": "/",         "permanent": true },
-    { "source": "/client",      "destination": "/client.html" },
-    { "source": "/master",      "destination": "/master.html" },
-    { "source": "/booking",     "destination": "/booking.html" },
-    { "source": "/bookings",    "destination": "/bookings.html" },
-    { "source": "/profile",     "destination": "/profile.html" },
-    { "source": "/services",    "destination": "/services.html" }
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "www.bookme-app.online" }],
+      "destination": "https://bookme-app.online/$1",
+      "permanent": true
+    }
   ],
   "headers": [
     {
@@ -27,8 +22,7 @@
       "headers": [
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "X-Frame-Options",        "value": "SAMEORIGIN" },
-        { "key": "Referrer-Policy",        "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy",     "value": "camera=(), microphone=(), geolocation=()" }
+        { "key": "Referrer-Policy",        "value": "strict-origin-when-cross-origin" }
       ]
     }
   ]
