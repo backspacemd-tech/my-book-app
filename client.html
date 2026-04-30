@@ -307,6 +307,8 @@
         if (hash === 'bookings') loadMyBookings();
       };
       window.addEventListener('hashchange', navigate);
+      // Restore view when user returns via browser back button
+      window.addEventListener('pageshow', navigate);
       navigate();
     })();
   </script>

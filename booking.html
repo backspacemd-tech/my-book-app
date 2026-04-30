@@ -161,18 +161,11 @@
       }
       datesEl.firstChild.click();
 
-      // Phone mask
+      // Phone — free format, just keep it clean
       const phone = document.getElementById('c-phone');
       phone.addEventListener('input', () => {
-        let v = phone.value.replace(/\D/g,'').slice(0,11);
-        if (v.startsWith('8')) v = '7'+v.slice(1);
-        if (!v.startsWith('7') && v.length) v = '7'+v;
-        let out = '+7';
-        if (v.length > 1) out += ' (' + v.slice(1,4);
-        if (v.length >= 4) out += ') ' + v.slice(4,7);
-        if (v.length >= 7) out += '-' + v.slice(7,9);
-        if (v.length >= 9) out += '-' + v.slice(9,11);
-        phone.value = out;
+        // Allow +, digits, spaces, dashes, parentheses only
+        phone.value = phone.value.replace(/[^\d\s\+\-\(\)]/g, '');
       });
 
       // Pre-fill from session (loaded in parallel above)
@@ -191,7 +184,7 @@
         if (!selectedDate)  { toast('Выберите дату');  return; }
         if (!selectedTime)  { toast('Выберите время'); return; }
         if (!clientName)    { toast('Укажите имя');    return; }
-        if (clientPhone.replace(/\D/g,'').length < 11) { toast('Укажите корректный телефон'); return; }
+        if (clientPhone.replace(/\D/g,'').length < 6) { toast('Укажите корректный телефон'); return; }
         confirmBtn.disabled = true; confirmBtn.textContent = 'Подтверждаем…';
 
         // Race-condition guard: re-verify slot is still free

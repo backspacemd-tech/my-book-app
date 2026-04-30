@@ -124,7 +124,10 @@ async function requireAuth(expectedRole = null) {
   if (!profile) { window.location.href = 'index.html'; return null; }
 
   if (expectedRole && profile.role !== expectedRole && profile.role !== 'admin') {
-    redirectByRole(profile.role); return null;
+    // Allow masters to enter client mode (to book services themselves)
+    if (!(expectedRole === 'client' && profile.role === 'master')) {
+      redirectByRole(profile.role); return null;
+    }
   }
   // Setup push silently in background
   setTimeout(() => setupPush(profile.id), 2000);

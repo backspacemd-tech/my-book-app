@@ -38,30 +38,68 @@
     </section>
 
     <form id="profile-form" style="padding:14px 20px 0;">
-      <h3 class="section-title" style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 4px 10px;font-weight:600;">О мастере</h3>
+
+      <!-- О мастере -->
+      <p class="section-label">О мастере</p>
       <div class="card" style="margin-bottom:18px;">
-        <div class="field"><label for="f-name">Имя</label><input id="f-name" type="text" placeholder="Анна Соколова" /></div>
-        <div class="field"><label for="f-role">Специализация / город</label><input id="f-role" type="text" placeholder="Бьюти-мастер · Москва" /></div>
+        <div class="field"><label for="f-name">Имя / Название</label><input id="f-name" type="text" placeholder="Анна Соколова" /></div>
+        <div class="field"><label for="f-phone">Телефон</label><input id="f-phone" type="tel" placeholder="+1 555 000 00 00" autocomplete="tel" /></div>
+        <div class="field"><label for="f-city">Город</label><input id="f-city" type="text" placeholder="Москва, Кишинёв, Бухарест…" /></div>
         <div class="field" style="margin-bottom:0;"><label for="f-desc">Описание</label><textarea id="f-desc" placeholder="Расскажите клиентам о себе"></textarea></div>
       </div>
 
-      <h3 class="section-title" style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 4px 10px;font-weight:600;">Личная ссылка</h3>
+      <!-- Специализация -->
+      <p class="section-label">Специализация</p>
+      <div style="margin-bottom:18px;">
+        <div class="chips" id="spec-chips" style="flex-wrap:wrap;gap:8px;">
+          <div class="chip" data-val="beauty">Бьюти</div>
+          <div class="chip" data-val="barber">Барбер</div>
+          <div class="chip" data-val="nail">Ногти</div>
+          <div class="chip" data-val="massage">Массаж</div>
+          <div class="chip" data-val="trainer">Тренер</div>
+          <div class="chip" data-val="tattoo">Тату</div>
+          <div class="chip" data-val="photo">Фото</div>
+          <div class="chip" data-val="other">Другое</div>
+        </div>
+      </div>
+
+      <!-- Ссылка -->
+      <p class="section-label">Личная ссылка</p>
       <div class="card" style="margin-bottom:18px;">
         <div class="field" style="margin-bottom:0;">
           <label for="f-username">Username</label>
           <input id="f-username" type="text" pattern="[a-z0-9_]{3,20}" placeholder="anna" />
-          <div class="field-hint">bookme.app/<span id="username-preview">username</span></div>
+          <div class="field-hint">bookme-app.online/p.html?u=<span id="username-preview">username</span></div>
         </div>
       </div>
 
-      <h3 class="section-title" style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 4px 10px;font-weight:600;">Подписка</h3>
+      <!-- Настройки -->
+      <p class="section-label">Настройки</p>
+      <div class="card" style="margin-bottom:18px;padding:0;">
+        <div class="row-item" style="border:none;box-shadow:none;background:transparent;">
+          <div class="meta"><div class="title" style="font-size:15px;">Принимаю записи онлайн</div><div class="sub">Клиенты увидят кнопку «Записаться»</div></div>
+          <label class="switch"><input type="checkbox" id="f-online" /><span class="slider"></span></label>
+        </div>
+        <div style="border-top:1px solid var(--border);"></div>
+        <div class="row-item" style="border:none;box-shadow:none;background:transparent;">
+          <div class="meta"><div class="title" style="font-size:15px;">Язык интерфейса</div><div class="sub" id="lang-sub">Авто</div></div>
+          <div id="lang-toggle" style="display:flex;gap:4px;">
+            <button type="button" class="btn btn-sm" id="lang-ru" style="padding:6px 12px;font-size:13px;">RU</button>
+            <button type="button" class="btn btn-sm" id="lang-en" style="padding:6px 12px;font-size:13px;">EN</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Подписка -->
+      <p class="section-label">Подписка</p>
       <a class="row-item clickable" href="subscription.html" style="margin-bottom:18px;text-decoration:none;">
         <div class="mini-avatar gradient" id="plan-icon" style="font-size:0;display:inline-flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
         <div class="meta"><div class="title" id="plan-title">—</div><div class="sub" id="plan-sub">—</div></div>
         <div class="muted" style="font-size:18px;">›</div>
       </a>
 
-      <h3 class="section-title" style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 4px 10px;font-weight:600;">Инструменты</h3>
+      <!-- Инструменты -->
+      <p class="section-label">Инструменты</p>
       <div class="card" style="margin-bottom:18px;padding:0;">
         <a class="row-item clickable" href="chat.html" style="border:none;box-shadow:none;background:transparent;text-decoration:none;">
           <div class="mini-avatar gradient" style="font-size:0;display:inline-flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></div>
@@ -76,16 +114,8 @@
         </a>
       </div>
 
-      <h3 class="section-title" style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 4px 10px;font-weight:600;">Настройки</h3>
-      <div class="card" style="margin-bottom:18px;padding:0;">
-        <div class="row-item" style="border:none;box-shadow:none;background:transparent;">
-          <div class="meta"><div class="title" style="font-size:15px;">Принимаю записи онлайн</div><div class="sub">Клиенты увидят кнопку «Записаться»</div></div>
-          <label class="switch"><input type="checkbox" id="f-online" /><span class="slider"></span></label>
-        </div>
-      </div>
-
       <button type="submit" class="btn btn-primary">Сохранить изменения</button>
-      <div style="height:12px;"></div>
+      <div style="height:10px;"></div>
       <a class="btn btn-secondary" href="master.html">Отмена</a>
     </form>
 
@@ -107,8 +137,20 @@
     </section>
 
     <section style="padding:24px 20px;">
+      <!-- Switch to client mode -->
+      <button class="btn btn-secondary" id="client-mode-btn" style="margin-bottom:10px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6"/></svg>
+        Записаться как клиент
+      </button>
       <button class="btn btn-danger" id="logout-btn">Выйти из аккаунта</button>
     </section>
+
+    <style>
+      .section-label {
+        font-size:13px;color:var(--text-2);text-transform:uppercase;
+        letter-spacing:.06em;margin:0 4px 10px;font-weight:600;padding:0 20px;
+      }
+    </style>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -143,7 +185,7 @@
           const img = Object.assign(document.createElement('img'), { src: _master.cover_url });
           img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
           area.insertBefore(img, lbl);
-          lbl.textContent = '✎ Сменить обложку';
+          lbl.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Сменить обложку';
         } else { lbl.textContent = '📷 Загрузить обложку'; }
       }
       renderCover();
@@ -152,11 +194,36 @@
       document.getElementById('display-name').textContent  = profile.name || 'Без имени';
       document.getElementById('display-email').textContent = profile.email;
       document.getElementById('f-name').value     = profile.name || '';
-      document.getElementById('f-role').value     = _master.specialty || '';
+      document.getElementById('f-phone').value    = _master.phone || '';
+      document.getElementById('f-city').value     = _master.city  || '';
       document.getElementById('f-username').value = _master.username || '';
       document.getElementById('f-desc').value     = _master.description || '';
       document.getElementById('f-online').checked = _master.accepts_online !== false;
       document.getElementById('username-preview').textContent = _master.username || 'username';
+
+      // Specialty chips
+      const specChips = document.querySelectorAll('#spec-chips .chip');
+      const setSpec = (val) => specChips.forEach(c => c.classList.toggle('active', c.dataset.val === val));
+      setSpec(_master.specialty || '');
+      specChips.forEach(c => c.addEventListener('click', () => setSpec(c.dataset.val)));
+
+      // Language toggle
+      const savedLang = localStorage.getItem('bm_lang') || navigator.language.split('-')[0];
+      const applyLang = (l) => {
+        localStorage.setItem('bm_lang', l);
+        document.getElementById('lang-sub').textContent = l === 'ru' ? 'Русский' : 'English';
+        document.getElementById('lang-ru').style.fontWeight = l === 'ru' ? '700' : '400';
+        document.getElementById('lang-en').style.fontWeight = l === 'en' ? '700' : '400';
+      };
+      applyLang(savedLang);
+      document.getElementById('lang-ru').addEventListener('click', () => applyLang('ru'));
+      document.getElementById('lang-en').addEventListener('click', () => applyLang('en'));
+
+      // Master → client mode
+      document.getElementById('client-mode-btn').addEventListener('click', () => {
+        sessionStorage.setItem('bm_client_mode', '1');
+        window.location.href = 'client.html';
+      });
 
       // Subscription info
       const plan = _master.plan || 'trial';
@@ -206,14 +273,16 @@
       document.getElementById('profile-form').addEventListener('submit', async e => {
         e.preventDefault();
         const name        = document.getElementById('f-name').value.trim();
-        const specialty   = document.getElementById('f-role').value.trim();
+        const phone       = document.getElementById('f-phone').value.trim();
+        const city        = document.getElementById('f-city').value.trim();
+        const specialty   = document.querySelector('#spec-chips .chip.active')?.dataset.val || _master.specialty || '';
         const username    = document.getElementById('f-username').value.trim().toLowerCase();
         const description = document.getElementById('f-desc').value.trim();
         const accepts     = document.getElementById('f-online').checked;
         if (username && !/^[a-z0-9_]{3,20}$/.test(username)) { toast('Username: 3–20 символов, латиница/цифры'); return; }
         const [r1, r2] = await Promise.all([
           sb.from('profiles').update({ name }).eq('id', profile.id),
-          sb.from('masters').update({ specialty, description, accepts_online: accepts, ...(username ? { username } : {}) }).eq('id', profile.id),
+          sb.from('masters').update({ specialty, description, accepts_online: accepts, phone, city, ...(username ? { username } : {}) }).eq('id', profile.id),
         ]);
         if (r1.error || r2.error) { toast('Ошибка сохранения'); return; }
         document.getElementById('display-name').textContent = name || 'Без имени';
