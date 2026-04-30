@@ -231,6 +231,13 @@
         }
         lastBooking = data;
 
+        // Notify master about new booking
+        sendPush(master.id, {
+          title: '📅 Новая запись!',
+          body:  `${clientName} — ${service.name}, ${selectedDate.label} в ${selectedTime}`,
+          url:   'bookings.html',
+        });
+
         document.querySelectorAll('#steps .step-dot').forEach(d => d.classList.add('done'));
         document.getElementById('title').textContent    = 'Готово';
         document.getElementById('form-view').hidden     = true;

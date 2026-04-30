@@ -126,6 +126,8 @@ async function requireAuth(expectedRole = null) {
   if (expectedRole && profile.role !== expectedRole && profile.role !== 'admin') {
     redirectByRole(profile.role); return null;
   }
+  // Setup push silently in background
+  setTimeout(() => setupPush(profile.id), 2000);
   return { session, profile };
 }
 
@@ -250,6 +252,8 @@ function addAppBackButton() {
   topbar.insertBefore(back, topbar.firstChild);
 }
 
+const VAPID_PUBLIC = 'BBMwcY30tnia_RZjEOEwwVEA6eC82Fy9P3gOksQ_jA0_00wA8Pp3T8N3YUGovZbwZLzmwy4ca8lZmc1JVR94bX0';
+
 function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
   window.addEventListener('load', async () => {
@@ -260,6 +264,46 @@ function registerServiceWorker() {
       console.warn('ServiceWorker failed:', err);
     }
   });
+}
+
+// Convert VAPID public key to Uint8Array for pushManager.subscribe
+function _vapidKey() {
+  const b = VAPID_PUBLIC.replace(/-/g,'+').replace(/_/g,'/');
+  const raw = atob(b.padEnd(b.length + (4 - b.length % 4) % 4, '='));
+  return Uint8Array.from(raw, c => c.charCodeAt(0));
+}
+
+async function setupPush(userId) {
+  if (!('PushManager' in window) || !('Notification' in window)) return;
+  const reg = await navigator.serviceWorker.ready;
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') return;
+  try {
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: _vapidKey(),
+    });
+    const json = sub.toJSON();
+    await sb.from('push_subscriptions').upsert({
+      user_id: userId,
+      endpoint: json.endpoint,
+      auth:    json.keys.auth,
+      p256dh:  json.keys.p256dh,
+    }, { onConflict: 'user_id,endpoint' });
+    console.log('[Push] subscribed');
+  } catch (e) {
+    console.warn('[Push] subscribe failed', e);
+  }
+}
+
+async function sendPush(userId, { title, body, url = '/' } = {}) {
+  try {
+    await fetch('https://bxuiggebgnxewmjwkbqa.supabase.co/functions/v1/send-push', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, title, body, url }),
+    });
+  } catch(e) { console.warn('[Push] send failed', e); }
 }
 
 let deferredInstallPrompt = null;

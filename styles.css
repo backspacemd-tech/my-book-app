@@ -137,13 +137,19 @@ body.page-exit .auth-wrap {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 20px 6px;
-  position: sticky;
-  top: 0;
+  padding: 14px 20px 10px;
+  position: fixed;          /* never moves — even in PWA */
+  top: var(--safe-top);
+  left: 0; right: 0;
   background: var(--bg);
   z-index: 20;
   border-bottom: 1px solid var(--border);
+  /* constrain to app width like .app */
+  max-width: 480px;
+  margin: 0 auto;
 }
+/* Push content below fixed topbar */
+.app { padding-top: 56px; }
 
 .topbar h1 {
   font-size: 17px;

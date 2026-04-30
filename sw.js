@@ -1,5 +1,5 @@
-/* BookMe — service worker v8 */
-const CACHE = 'bookme-v8';
+/* BookMe — service worker v9 */
+const CACHE = 'bookme-v9';
 
 // Only static assets get cached — never HTML pages
 const STATIC = [
@@ -55,6 +55,33 @@ self.addEventListener('activate', e => {
     )
   );
   self.clients.claim();
+});
+
+// ── Push notifications ────────────────────────────────────────
+self.addEventListener('push', e => {
+  let data = { title: 'BookMe', body: '', url: '/' };
+  try { data = { ...data, ...e.data.json() }; } catch {}
+  e.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon:  './apple-touch-icon.png',
+      badge: './apple-touch-icon.png',
+      data:  { url: data.url },
+      vibrate: [100, 50, 100],
+    })
+  );
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = e.notification.data?.url || '/';
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
+      const c = cs.find(w => w.url.includes(self.location.origin));
+      if (c) { c.focus(); c.navigate(url); }
+      else    clients.openWindow(url);
+    })
+  );
 });
 
 self.addEventListener('fetch', e => {

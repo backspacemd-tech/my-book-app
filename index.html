@@ -130,6 +130,29 @@
     .btn-google:hover { background:var(--surface-2); }
   </style>
 
+  <script>
+    // Instant auth check from localStorage — show splash before any SDK loads
+    (function() {
+      try {
+        const raw = localStorage.getItem('bookme_auth');
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        const token = parsed?.access_token || parsed?.currentSession?.access_token;
+        if (!token) return;
+        // Has a saved session — show splash immediately
+        document.documentElement.style.background = 'var(--bg, #0A0A0B)';
+        document.body.style.cssText = 'margin:0;background:#0A0A0B;';
+        document.body.innerHTML = `
+          <div id="splash" style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+            height:100dvh;gap:20px;background:#0A0A0B;">
+            <img src="logo.svg" style="width:72px;height:72px;border-radius:20px;" alt="BookMe"/>
+            <div style="width:24px;height:24px;border:2.5px solid #333;border-top-color:#fff;
+              border-radius:50%;animation:_sp .7s linear infinite;"></div>
+          </div>
+          <style>@keyframes _sp{to{transform:rotate(360deg)}}</style>`;
+      } catch(e) {}
+    })();
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="app.js"></script>
@@ -137,7 +160,7 @@
     // If already logged in, redirect immediately
     (async () => {
       const session = await getSession();
-      if (!session) return;
+      if (!session) { document.getElementById('splash')?.remove(); return; }
       const profile = await getProfile(session.user.id)
         || await ensureProfile(session.user, { email: session.user.email, name: session.user.user_metadata?.name || undefined });
       if (profile) redirectByRole(profile.role);
