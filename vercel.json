@@ -1,4 +1,19 @@
 {
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/admin",       "destination": "/admin-login.html" },
+    { "source": "/admin-panel", "destination": "/admin-login.html" }
+  ],
+  "redirects": [
+    { "source": "/index",       "destination": "/",         "permanent": true },
+    { "source": "/client",      "destination": "/client.html" },
+    { "source": "/master",      "destination": "/master.html" },
+    { "source": "/booking",     "destination": "/booking.html" },
+    { "source": "/bookings",    "destination": "/bookings.html" },
+    { "source": "/profile",     "destination": "/profile.html" },
+    { "source": "/services",    "destination": "/services.html" }
+  ],
   "headers": [
     {
       "source": "/sw.js",
@@ -11,12 +26,10 @@
       "source": "/(.*)",
       "headers": [
         { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+        { "key": "X-Frame-Options",        "value": "SAMEORIGIN" },
+        { "key": "Referrer-Policy",        "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy",     "value": "camera=(), microphone=(), geolocation=()" }
       ]
     }
-  ],
-  "cleanUrls": true,
-  "trailingSlash": false
+  ]
 }

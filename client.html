@@ -32,11 +32,19 @@
       </section>
 
       <!-- Search bar -->
-      <div style="padding:0 20px 16px;">
+      <div style="padding:0 20px 10px;">
         <div style="position:relative;">
-          <input id="search-input" type="search" placeholder="Поиск мастера по имени или специализации…"
-            style="width:100%;box-sizing:border-box;padding:12px 16px 12px 40px;border:1px solid var(--border);border-radius:var(--r);font-size:15px;background:var(--surface);color:var(--text);outline:none;" />
-          <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none;color:var(--text-3);">🔍</span>
+          <input id="search-input" type="search" placeholder="Поиск мастера по имени…"
+            style="width:100%;box-sizing:border-box;padding:12px 16px 12px 42px;border:1px solid var(--border);border-radius:var(--r);font-size:15px;background:var(--surface);color:var(--text);outline:none;" />
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-3);pointer-events:none;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </div>
+      </div>
+      <!-- City filter -->
+      <div style="padding:0 20px 12px;">
+        <div style="position:relative;">
+          <input id="city-input" type="text" placeholder="Город (необязательно)"
+            style="width:100%;box-sizing:border-box;padding:10px 16px 10px 42px;border:1px solid var(--border);border-radius:var(--r);font-size:14px;background:var(--surface);color:var(--text);outline:none;" />
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-3);pointer-events:none;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         </div>
       </div>
 
@@ -122,10 +130,13 @@
       });
     }
 
+    let _cityFilter = '';
+
     async function loadMasters() {
       document.getElementById('masters-list').innerHTML = skCards(4);
-      let query = sb.from('masters').select('*, profiles(name, avatar_url)').eq('accepts_online', true);
+      let query = sb.from('masters').select('*, profiles(name, avatar_url), city').eq('accepts_online', true);
       if (_currentSpec) query = query.eq('specialty', _currentSpec);
+      if (_cityFilter)  query = query.ilike('city', `%${_cityFilter}%`);
       const { data, error } = await query.order('rating', { ascending: false }).limit(30);
       if (error) {
         document.getElementById('masters-list').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><h4>Ошибка загрузки</h4><p>${error.message}</p><button class="btn btn-secondary btn-sm" style="margin-top:14px;" onclick="loadMasters()">Повторить</button></div>`;
@@ -159,7 +170,7 @@
           ${avatar}
           <div class="info">
             <div class="m-name">${name}</div>
-            <div class="m-spec">${specLabel}</div>
+            <div class="m-spec">${specLabel}${m.city ? ' · ' + m.city : ''}</div>
             <div class="m-rating">${rating}</div>
           </div>
           <div class="m-cta">Записаться ›</div>
@@ -267,6 +278,12 @@
       // Search
       document.getElementById('search-input').addEventListener('input', e => {
         _searchQuery = e.target.value; renderMasters();
+      });
+      // City filter
+      let _cityDebounce;
+      document.getElementById('city-input').addEventListener('input', e => {
+        clearTimeout(_cityDebounce);
+        _cityDebounce = setTimeout(() => { _cityFilter = e.target.value.trim(); loadMasters(); }, 500);
       });
 
       // Specialty chips

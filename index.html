@@ -30,6 +30,13 @@
 
     <!-- ── Login ── -->
     <div id="form-login">
+      <!-- Face ID button — shown only if passkey registered -->
+      <div id="faceid-wrap" hidden style="margin-bottom:14px;">
+        <button class="btn btn-secondary" id="faceid-btn" style="gap:10px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M9 11.5C6.5 11.9 4 13.7 4 17"/><path d="M15 11.5c2.5.4 5 2.2 5 5.5"/><path d="M10 14.5v3"/><path d="M14 14.5v3"/><path d="M12 14.5v.01"/></svg>
+          Войти с Face ID
+        </button>
+      </div>
       <div class="field">
         <label for="l-email">Email</label>
         <input id="l-email" type="email" placeholder="anna@example.com" autocomplete="email" />
@@ -157,10 +164,10 @@
   <script src="config.js"></script>
   <script src="app.js"></script>
   <script>
-    // If already logged in, redirect immediately
+    // If already logged in, redirect immediately (with Face ID option)
     (async () => {
       const session = await getSession();
-      if (!session) { document.getElementById('splash')?.remove(); return; }
+      if (!session) { document.getElementById('splash')?.remove(); showFaceIdBtn(); return; }
       const profile = await getProfile(session.user.id)
         || await ensureProfile(session.user, { email: session.user.email, name: session.user.user_metadata?.name || undefined });
       if (profile) redirectByRole(profile.role);
@@ -190,6 +197,24 @@
       return m;
     }
 
+    // Show Face ID button if passkey registered
+    function showFaceIdBtn() {
+      if (!hasPasskey()) return;
+      const wrap = document.getElementById('faceid-wrap');
+      if (wrap) wrap.hidden = false;
+    }
+    showFaceIdBtn();
+
+    // Face ID login
+    document.getElementById('faceid-btn')?.addEventListener('click', async () => {
+      const session = await tryPasskeyLogin();
+      if (session) {
+        const profile = await getProfile(session.user.id);
+        if (profile) { redirectByRole(profile.role); return; }
+      }
+      toast('Войдите через email для подтверждения');
+    });
+
     // Login with email
     document.getElementById('login-btn').addEventListener('click', async () => {
       const email = document.getElementById('l-email').value.trim();
@@ -200,6 +225,10 @@
       const { data, error } = await sb.auth.signInWithPassword({ email, password: pwd });
       if (error) { toast(friendlyError(error)); btn.textContent = 'Войти'; btn.disabled = false; return; }
       const profile = await getProfile(data.user.id) || await ensureProfile(data.user, { email });
+      // Offer to save Face ID after successful login
+      if (profile && window.PublicKeyCredential) {
+        setTimeout(() => registerPasskey(profile), 1500);
+      }
       redirectByRole(profile?.role || 'client');
     });
 
@@ -207,9 +236,13 @@
 
     // Google OAuth — only if configured
     const googleOAuth = async () => {
+      const isProd = location.hostname === 'bookme-app.online';
+      const redirectTo = isProd
+        ? 'https://bookme-app.online/dashboard'
+        : window.location.origin + '/dashboard.html';
       const { error } = await sb.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: window.location.origin + '/dashboard.html' },
+        options: { redirectTo },
       });
       if (error) toast('Google ещё не подключён. Используйте email и пароль.');
     };

@@ -224,12 +224,20 @@
         }
         lastBooking = data;
 
-        // Notify master about new booking
+        // Notify master
         sendPush(master.id, {
-          title: '📅 Новая запись!',
+          title: 'Новая запись!',
           body:  `${clientName} — ${service.name}, ${selectedDate.label} в ${selectedTime}`,
           url:   'bookings.html',
         });
+        // Notify client (if logged in)
+        if (session?.user?.id) {
+          sendPush(session.user.id, {
+            title: 'Запись подтверждена',
+            body:  `${service.name}, ${selectedDate.label} в ${selectedTime}`,
+            url:   'client.html#bookings',
+          });
+        }
 
         document.querySelectorAll('#steps .step-dot').forEach(d => d.classList.add('done'));
         document.getElementById('title').textContent    = 'Готово';

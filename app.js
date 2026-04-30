@@ -63,6 +63,7 @@ async function ensureMasterRecord(user, attrs = {}) {
   if (master) return master;
   const email = attrs.email || user.email || '';
   const username = attrs.username || email.split('@')[0] || user.id.slice(0, 8);
+  // New masters get 30-day trial (DB default is now 30 days)
   await sb.from('masters').insert({
     id: user.id,
     username,
@@ -483,6 +484,61 @@ function mockAIResponse(message, profile, bookings, services = []) {
     'Спросите о записях, выручке, услугах или попросите бизнес-совет.',
   ];
   return fb[Math.floor(Math.random()*fb.length)];
+}
+
+// ── Face ID / Passkeys (WebAuthn) ────────────────────────────
+const PASSKEY_KEY = 'bm_passkey_id';
+
+async function registerPasskey(profile) {
+  if (!window.PublicKeyCredential) return;
+  try {
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const idBytes   = new TextEncoder().encode(profile.id);
+    const cred = await navigator.credentials.create({
+      publicKey: {
+        challenge,
+        rp: { name: 'BookMe', id: location.hostname },
+        user: { id: idBytes, name: profile.email, displayName: profile.name || profile.email },
+        pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+        authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'preferred' },
+        timeout: 60000,
+      },
+    });
+    if (cred) {
+      localStorage.setItem(PASSKEY_KEY, JSON.stringify({ id: cred.id, userId: profile.id }));
+      toast('Face ID / Touch ID сохранён', { icon: '✓' });
+    }
+  } catch (e) { console.log('[Passkey] register skipped:', e.message); }
+}
+
+async function tryPasskeyLogin() {
+  const saved = JSON.parse(localStorage.getItem(PASSKEY_KEY) || 'null');
+  if (!saved || !window.PublicKeyCredential) return false;
+  try {
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const cred = await navigator.credentials.get({
+      publicKey: {
+        challenge,
+        rpId: location.hostname,
+        allowCredentials: [{ type: 'public-key', id: _b64ToBytes(saved.id) }],
+        userVerification: 'preferred',
+        timeout: 60000,
+      },
+    });
+    if (cred) {
+      // Passkey verified — use cached Supabase session
+      const session = await getSession();
+      if (session) return session;
+    }
+  } catch (e) { console.log('[Passkey] login skipped:', e.message); }
+  return false;
+}
+
+function hasPasskey() { return !!localStorage.getItem(PASSKEY_KEY); }
+
+function _b64ToBytes(s) {
+  const raw = atob(s.replace(/-/g,'+').replace(/_/g,'/'));
+  return Uint8Array.from(raw, c => c.charCodeAt(0));
 }
 
 // ── Animation utilities ───────────────────────────────────────

@@ -107,6 +107,11 @@
   <script src="config.js"></script>
   <script src="app.js"></script>
   <script>
+    // Admin guard — must come through admin-login.html
+    if (sessionStorage.getItem('bm_admin') !== 'true') {
+      location.replace('admin-login.html');
+      throw new Error('not admin');
+    }
     let _users = [], _news = [], _profile;
 
     function setView(name) {
@@ -264,7 +269,7 @@
         const email = document.getElementById('inv-email').value.trim();
         const role  = document.querySelector('input[name=inv-role]:checked')?.value || 'master';
         if (!email) { toast('Укажите email'); return; }
-        const { data, error } = await sb.from('invitations').insert({ email, role, invited_by: _profile.id }).select().single();
+        const { data, error } = await sb.from('invitations').insert({ email, role }).select().single();
         if (error) { toast('Ошибка: ' + error.message); return; }
         const link = `${window.location.origin}/index.html?invite=${data.token}`;
         await copyToClipboard(link);
@@ -273,11 +278,12 @@
     };
 
     (async () => {
-      const auth = await requireAuth('admin');
-      if (!auth) return;
-      _profile = auth.profile;
-      document.getElementById('admin-name').textContent = _profile.name || _profile.email;
-      document.getElementById('logout-btn').addEventListener('click', signOut);
+      // Admin logged in via admin-login.html — no Supabase auth needed
+      document.getElementById('admin-name').textContent = 'vasea';
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        sessionStorage.removeItem('bm_admin');
+        location.replace('admin-login.html');
+      });
       document.getElementById('add-news-btn')?.addEventListener('click', () => openNewsForm());
       document.getElementById('user-search')?.addEventListener('input', e => loadUsers(e.target.value));
       document.getElementById('save-settings-btn')?.addEventListener('click', () => toast('Настройки сохранены', { icon:'✓' }));

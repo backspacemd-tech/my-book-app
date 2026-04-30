@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <meta name="theme-color" content="#0A0A0A"/>
+  <title>BookMe · Admin</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    .admin-login-page {
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: var(--bg);
+    }
+    .admin-card {
+      width: 100%;
+      max-width: 360px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      padding: 36px 28px;
+      box-shadow: var(--sh-lg);
+      animation: fadeUp .4s var(--ease);
+    }
+    .admin-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--text);
+      color: var(--bg);
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-login-page">
+    <div class="admin-card">
+      <div class="admin-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        ADMIN PANEL
+      </div>
+      <h1 style="font-size:24px;font-weight:700;letter-spacing:-0.02em;margin:0 0 4px;">BookMe</h1>
+      <p style="color:var(--text-2);font-size:14px;margin:0 0 28px;">Панель администратора</p>
+
+      <div class="field">
+        <label for="a-login">Логин</label>
+        <input id="a-login" type="text" placeholder="vasea" autocomplete="off"/>
+      </div>
+      <div class="field">
+        <label for="a-pass">Пароль</label>
+        <input id="a-pass" type="password" placeholder="••••••••"/>
+      </div>
+      <div id="a-error" style="color:var(--danger);font-size:13px;margin-bottom:12px;display:none;text-align:center;">
+        Неверный логин или пароль
+      </div>
+      <button class="btn btn-primary" id="a-btn">Войти</button>
+    </div>
+  </div>
+
+  <script>
+    // Check if already logged in as admin
+    if (sessionStorage.getItem('bm_admin') === 'true') {
+      location.replace('admin.html');
+    }
+
+    const ADMIN_LOGIN = 'vasea';
+    const ADMIN_PASS  = 'black2026';
+
+    function attempt() {
+      const login = document.getElementById('a-login').value.trim();
+      const pass  = document.getElementById('a-pass').value;
+      const err   = document.getElementById('a-error');
+      const btn   = document.getElementById('a-btn');
+      err.style.display = 'none';
+      if (login === ADMIN_LOGIN && pass === ADMIN_PASS) {
+        sessionStorage.setItem('bm_admin', 'true');
+        btn.textContent = 'Входим…'; btn.disabled = true;
+        setTimeout(() => location.replace('admin.html'), 300);
+      } else {
+        err.style.display = 'block';
+        document.getElementById('a-pass').value = '';
+        document.getElementById('a-pass').focus();
+      }
+    }
+
+    document.getElementById('a-btn').addEventListener('click', attempt);
+    document.getElementById('a-pass').addEventListener('keydown', e => { if (e.key === 'Enter') attempt(); });
+    document.getElementById('a-login').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('a-pass').focus(); });
+  </script>
+</body>
+</html>
