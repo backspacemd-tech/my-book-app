@@ -1,26 +1,15 @@
-/* BookMe — service worker v7 */
-const CACHE = 'bookme-v7';
-const ASSETS = [
-  './',
-  './index.html',
-  './master.html',
-  './client.html',
-  './profile.html',
-  './services.html',
-  './bookings.html',
-  './analytics.html',
-  './chat.html',
-  './subscription.html',
-  './admin.html',
-  './p.html',
-  './booking.html',
-  './public.html',
-  './dashboard.html',
+/* BookMe — service worker v8 */
+const CACHE = 'bookme-v8';
+
+// Only static assets get cached — never HTML pages
+const STATIC = [
   './styles.css',
   './app.js',
   './config.js',
+  './logo.svg',
   './manifest.json',
-  './offline.html',
+  './apple-touch-icon.png',
+  './apple-touch-icon-512.png',
 ];
 
 const OFFLINE_HTML = `<!doctype html><html lang="ru"><head>
@@ -29,29 +18,31 @@ const OFFLINE_HTML = `<!doctype html><html lang="ru"><head>
 <title>BookMe — нет связи</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0A0A0B;color:#FAFAFA;font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+body{background:#0A0A0B;color:#FAFAFA;font-family:-apple-system,sans-serif;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   min-height:100dvh;padding:24px;text-align:center;gap:16px;}
-.icon{width:72px;height:72px;border-radius:22px;background:linear-gradient(135deg,#FF5A6F,#D63384);
-  display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#fff;margin-bottom:4px;}
+.icon{width:72px;height:72px;border-radius:22px;background:linear-gradient(135deg,#4F378A,#150E24);
+  display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:4px;}
 h1{font-size:22px;font-weight:700;letter-spacing:-0.02em;}
 p{font-size:15px;color:#9CA3AF;line-height:1.5;max-width:300px;}
 button{margin-top:8px;background:#FAFAFA;color:#0A0A0A;border:none;border-radius:14px;
   padding:14px 28px;font-size:16px;font-weight:600;cursor:pointer;}
 </style></head><body>
-<div class="icon">BM</div>
+<div class="icon">🦋</div>
 <h1>Нет соединения</h1>
-<p>Проверьте интернет и попробуйте снова. Основные страницы доступны офлайн.</p>
+<p>Проверьте интернет и попробуйте снова.</p>
 <button onclick="location.reload()">Повторить</button>
 </body></html>`;
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(async c => {
-      // Cache assets individually — one fail won't break the whole SW
-      await Promise.allSettled(ASSETS.map(url => c.add(url).catch(() => {})));
-      // Store inline offline page
-      c.put('./offline.html', new Response(OFFLINE_HTML, { headers: { 'Content-Type': 'text/html' } }));
+    caches.open(CACHE).then(c => {
+      // Store offline page
+      c.put('./offline.html', new Response(OFFLINE_HTML, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      }));
+      // Cache static assets individually (one failure won't break install)
+      return Promise.allSettled(STATIC.map(url => c.add(url).catch(() => {})));
     })
   );
   self.skipWaiting();
@@ -68,28 +59,52 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
-  // Never intercept Supabase API calls
-  if (e.request.url.includes('supabase.co')) return;
-  // Never intercept CDN scripts
-  if (e.request.url.includes('cdn.jsdelivr.net')) return;
 
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request)
+  const url = new URL(e.request.url);
+
+  // ── Never intercept these ──────────────────────────────────
+  // Supabase API
+  if (url.hostname.includes('supabase.co')) return;
+  // CDN (Supabase JS, etc.)
+  if (url.hostname.includes('jsdelivr.net')) return;
+  // Google OAuth & external auth domains
+  if (url.hostname.includes('google') || url.hostname.includes('accounts.')) return;
+  // Any URL with query params (OAuth callbacks: ?code=, ?error=, ?token= etc.)
+  if (url.search) return;
+  // Auth hash fragments (access_token, refresh_token)
+  if (url.hash.includes('access_token') || url.hash.includes('refresh_token')) return;
+
+  // ── HTML navigation → Network first, cache ONLY as fallback ──
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request)
         .then(res => {
+          // CRITICAL: never cache or return redirect responses — Safari bug
+          if (res.status >= 300 && res.status < 400) return res;
+          // Cache fresh HTML for offline fallback
           if (res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE).then(c => c.put(e.request, copy));
+            caches.open(CACHE).then(c => c.put(e.request, res.clone()));
           }
           return res;
         })
         .catch(() =>
-          // Return offline page for navigation requests
-          e.request.mode === 'navigate'
-            ? caches.match('./offline.html')
-            : Response.error()
-        );
+          // Offline: try cached page, then generic offline page
+          caches.match(e.request).then(cached => cached || caches.match('./offline.html'))
+        )
+    );
+    return;
+  }
+
+  // ── Static assets (CSS, JS, images) → Cache first ─────────
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      if (cached) return cached;
+      return fetch(e.request).then(res => {
+        if (res.ok) {
+          caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+        }
+        return res;
+      }).catch(() => Response.error());
     })
   );
 });
