@@ -317,8 +317,31 @@ body.page-exit .auth-wrap {
   border: 1px solid var(--border);
 }
 .btn-sm { padding: 10px 14px; font-size: 14px; width: auto; }
-.btn-row { display: flex; gap: 10px; }
-.btn-row .btn { flex: 1; }
+.btn-row { display: flex; gap: 8px; }
+.btn-row .btn { flex: 1; min-width: 0; }
+
+/* Quick-action buttons: icon + label in one line, no wrap */
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  transition: background .15s var(--ease), transform .08s var(--ease);
+  text-decoration: none;
+}
+.btn-action:active { transform: scale(.97); background: var(--surface-2); }
+.btn-action svg { width: 16px; height: 16px; flex-shrink: 0; }
 
 /* Icon-only кнопка */
 .icon-btn {
@@ -603,6 +626,8 @@ body.page-exit .auth-wrap {
   justify-content: center;
   pointer-events: none;
   padding-bottom: var(--safe-bottom);
+  /* fill the safe-area gap so no transparent strip shows in PWA */
+  background: var(--bg);
 }
 .tabbar-inner {
   pointer-events: auto;
@@ -797,8 +822,10 @@ body.page-exit .auth-wrap {
   animation: fadeUp .35s var(--ease);
 }
 
+/* Cover extends behind status bar in PWA */
 .public-cover {
-  height: 140px;
+  height: calc(160px + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
   background: linear-gradient(135deg, #0A0A0A 0%, #2A1F25 60%, #4A2530 100%);
   position: relative;
   overflow: hidden;
@@ -808,6 +835,32 @@ body.page-exit .auth-wrap {
   position: absolute; inset: 0;
   background: radial-gradient(600px 200px at 70% 0%, rgba(255,90,111,.25), transparent 60%);
 }
+
+/* Floating back/share buttons over cover */
+.cover-actions {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 16px; right: 16px;
+  display: flex;
+  justify-content: space-between;
+  z-index: 10;
+}
+.cover-btn {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.15);
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .15s;
+}
+.cover-btn:active { background: rgba(0,0,0,.65); }
+.cover-btn svg { width: 18px; height: 18px; }
 
 .public-header {
   padding: 0 24px 16px;

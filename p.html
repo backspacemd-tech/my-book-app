@@ -12,10 +12,24 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="BookMe" />
+  <style>
+    /* Remove body safe-top so cover reaches top of screen */
+    body { padding-top: 0; }
+  </style>
 </head>
 <body>
   <div class="public">
-    <div class="public-cover" id="cover"></div>
+    <!-- Cover — extends behind status bar -->
+    <div class="public-cover" id="cover">
+      <div class="cover-actions">
+        <button class="cover-btn" id="back-btn" aria-label="Назад">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <button class="cover-btn" id="share-btn" aria-label="Поделиться">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        </button>
+      </div>
+    </div>
 
     <header class="public-header">
       <div class="avatar" id="avatar">M</div>
@@ -42,8 +56,17 @@
       <div class="list" id="services"></div>
     </section>
 
+    <!-- Portfolio -->
+    <section class="section" id="portfolio-section" hidden style="margin-top:24px;">
+      <div class="section-head">
+        <h3>Портфолио</h3>
+        <span class="muted" style="font-size:13px;" id="portfolio-count"></span>
+      </div>
+      <div class="portfolio-grid" id="portfolio-grid"></div>
+    </section>
+
     <!-- Reviews -->
-    <section class="section" id="reviews-section" hidden>
+    <section class="section" id="reviews-section" hidden style="margin-top:24px;">
       <div class="section-head">
         <h3>Отзывы</h3>
         <span class="muted" style="font-size:13px;" id="reviews-summary"></span>
@@ -64,13 +87,28 @@
     (async () => {
       const params   = new URLSearchParams(location.search);
       const username = params.get('u');
-      if (!username) { document.body.innerHTML = '<div class="empty" style="padding:60px 24px;text-align:center;"><h4>Мастер не найден</h4></div>'; return; }
+      if (!username) {
+        document.body.innerHTML = '<div class="empty" style="padding:60px 24px;text-align:center;"><h4>Мастер не найден</h4></div>';
+        return;
+      }
 
-      // Load master by username
-      const { data: master } = await sb.from('masters')
-        .select('*, profiles(name, avatar_url, email)')
-        .eq('username', username)
-        .single();
+      // Back button
+      document.getElementById('back-btn').addEventListener('click', () => {
+        if (history.length > 1) history.back();
+        else location.href = 'index.html';
+      });
+
+      // Load all data in parallel
+      const [{ data: master }, { data: portfolio = [] }, { data: reviews = [] }] = await Promise.all([
+        sb.from('masters').select('*, profiles(name, avatar_url, email)').eq('username', username).single(),
+        sb.from('portfolio').select('*').eq('master_id',
+          // We'll re-fetch after master loads — placeholder first
+          '00000000-0000-0000-0000-000000000000'
+        ),
+        sb.from('reviews').select('*').eq('master_id',
+          '00000000-0000-0000-0000-000000000000'
+        ).order('created_at', { ascending: false }).limit(10),
+      ]);
 
       if (!master) {
         document.body.innerHTML = '<div class="empty" style="padding:60px 24px;text-align:center;"><h4>Мастер не найден</h4><p>Проверьте правильность ссылки</p></div>';
@@ -98,6 +136,7 @@
       if (master.cover_url) {
         document.getElementById('cover').style.backgroundImage = `url(${master.cover_url})`;
         document.getElementById('cover').style.backgroundSize  = 'cover';
+        document.getElementById('cover').style.backgroundPosition = 'center';
       }
 
       if (master.rating > 0 && master.reviews_count > 0) {
@@ -107,20 +146,33 @@
       }
       if (!master.accepts_online) document.getElementById('online-badge').hidden = true;
 
-      // Show skeleton while services load
-      const servicesEl = document.getElementById('services');
-      const bookBtn    = document.getElementById('book-btn');
-      let selectedId   = null;
-      servicesEl.innerHTML = skCards(3);
+      // Share button
+      document.getElementById('share-btn').addEventListener('click', async () => {
+        const url = location.href;
+        if (navigator.share) {
+          try { await navigator.share({ title: profile?.name || 'BookMe', url }); return; } catch {}
+        }
+        await copyToClipboard(url);
+      });
 
-      // Load services + reviews in parallel
-      const [{ data: services = [] }, { data: reviews = [] }] = await Promise.all([
+      // Load services + portfolio + reviews in parallel (now we have master.id)
+      const [{ data: services = [] }, { data: portPhotos = [] }, { data: revData = [] }] = await Promise.all([
         sb.from('services').select('*').eq('master_id', master.id).order('price'),
+        sb.from('portfolio').select('*').eq('master_id', master.id).order('created_at', { ascending: false }),
         sb.from('reviews').select('*').eq('master_id', master.id).order('created_at', { ascending: false }).limit(10),
       ]);
 
+      // Render services
+      const servicesEl = document.getElementById('services');
+      const bookBtn    = document.getElementById('book-btn');
+      let selectedId   = null;
+
       if (!services.length) {
-        servicesEl.innerHTML = `<div class="empty"><div class="empty-icon">✦</div><h4>Услуги не добавлены</h4><p>Мастер пока не настроил прайс-лист</p></div>`;
+        servicesEl.innerHTML = `<div class="empty">
+          <div class="empty-icon">${Icons.services}</div>
+          <h4>Услуги не добавлены</h4>
+          <p>Мастер пока не настроил прайс-лист</p>
+        </div>`;
         bookBtn.style.display = 'none';
         document.getElementById('select-hint').style.display = 'none';
       } else {
@@ -142,10 +194,20 @@
         });
       }
 
-      if (reviews.length) {
+      // Render portfolio
+      if (portPhotos.length) {
+        document.getElementById('portfolio-section').hidden = false;
+        document.getElementById('portfolio-count').textContent = `${portPhotos.length} фото`;
+        document.getElementById('portfolio-grid').innerHTML = portPhotos.map(p =>
+          `<div class="portfolio-item"><img src="${p.url}" alt="" loading="lazy"/></div>`
+        ).join('');
+      }
+
+      // Render reviews
+      if (revData.length) {
         document.getElementById('reviews-section').hidden = false;
         document.getElementById('reviews-summary').textContent = master.rating > 0 ? `${master.rating.toFixed(1)} из 5` : '';
-        document.getElementById('reviews').innerHTML = reviews.map(r => `
+        document.getElementById('reviews').innerHTML = revData.map(r => `
           <div class="review-card">
             <div class="stars">${'★'.repeat(r.stars)}</div>
             <p>«${r.text}»</p>
@@ -156,7 +218,6 @@
       // Book button
       bookBtn.addEventListener('click', () => {
         if (!selectedId) return;
-        const svc = services.find(s => s.id === selectedId);
         location.href = `booking.html?u=${encodeURIComponent(username)}&s=${selectedId}`;
       });
     })();
