@@ -140,8 +140,12 @@ async function cancelBooking(id, { onDone } = {}) {
 
 async function navigateTo(url) {
   if (!url) return;
+  // Haptic feedback on supported devices
+  if (navigator.vibrate) navigator.vibrate(8);
   document.body.classList.add('page-exit');
-  await new Promise((resolve) => setTimeout(resolve, 180));
+  // If browser supports View Transitions, it handles the animation automatically
+  // The page-exit class is the fallback for older browsers
+  await new Promise(r => setTimeout(r, 160));
   window.location.href = url;
 }
 
@@ -432,6 +436,54 @@ function mockAIResponse(message, profile, bookings, services = []) {
     'Спросите о записях, выручке, услугах или попросите бизнес-совет.',
   ];
   return fb[Math.floor(Math.random()*fb.length)];
+}
+
+// ── Animation utilities ───────────────────────────────────────
+
+// Stagger-animate a list container (retriggers on re-render)
+function staggerList(container) {
+  if (!container) return;
+  container.classList.remove('stagger');
+  void container.offsetWidth; // force reflow to restart animation
+  container.classList.add('stagger');
+}
+
+// Animate a numeric value counting up
+function animateNumber(el, target, { duration = 550, prefix = '', suffix = '', decimals = 0 } = {}) {
+  if (!el) return;
+  const start = performance.now();
+  const step = (now) => {
+    const p = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
+    const val = decimals
+      ? (eased * target).toFixed(decimals)
+      : Math.round(eased * target).toLocaleString('ru');
+    el.textContent = prefix + val + suffix;
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+// Add pop class to stat elements with stagger
+function animateStats(selectors) {
+  selectors.forEach((sel, i) => {
+    const el = typeof sel === 'string' ? document.querySelector(sel) : sel;
+    if (!el) return;
+    el.classList.remove('anim-stat-pop');
+    setTimeout(() => { void el.offsetWidth; el.classList.add('anim-stat-pop'); }, i * 60);
+  });
+}
+
+// Fade + slide a section in
+function fadeSection(el, delay = 0) {
+  if (!el) return;
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(12px)';
+  el.style.transition = 'none';
+  void el.offsetWidth;
+  el.style.transition = `opacity .3s .${delay}s cubic-bezier(.25,.46,.45,.94), transform .3s .${delay}s cubic-bezier(.25,.46,.45,.94)`;
+  el.style.opacity = '1';
+  el.style.transform = 'translateY(0)';
 }
 
 // ── In-memory cache with TTL ──────────────────────────────────

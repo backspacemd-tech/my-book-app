@@ -132,12 +132,17 @@
       const days7 = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
       function renderDashboard(bookings) {
         const stats = calcStats(bookings);
-        document.getElementById('today-count').textContent    = stats.todayCount;
-        document.getElementById('upcoming-count').textContent = stats.upcomingCount;
-        document.getElementById('revenue').textContent        = fmt$(stats.revenue7);
-        document.getElementById('revenue-trend').textContent  = stats.revenue7 > 0 ? `${fmt$(stats.revenue7)} за 7 дней` : 'нет записей';
-        document.getElementById('total-bookings').textContent = bookings.length;
+
+        // Animate stat numbers counting up
+        animateNumber(document.getElementById('today-count'),    stats.todayCount);
+        animateNumber(document.getElementById('upcoming-count'), stats.upcomingCount);
+        animateNumber(document.getElementById('revenue'),        stats.revenue7, { prefix: '$' });
+        animateNumber(document.getElementById('total-bookings'), bookings.length);
+        document.getElementById('revenue-trend').textContent  = stats.revenue7 > 0 ? `$${stats.revenue7.toLocaleString('ru')} за 7 дней` : 'нет записей';
         document.getElementById('total-trend').textContent    = bookings.length ? `${bookings.length} клиентов` : 'за всё время';
+
+        // Pop animation on stat cards
+        animateStats(['.stat.dark .stat-value', '.stat:not(.dark) .stat-value']);
 
         const maxC = Math.max(1, ...stats.weekData.map(d => d.count));
         document.getElementById('barchart').innerHTML = stats.weekData.map(d => {
@@ -150,7 +155,7 @@
         const todayB = bookingsByDate(bookings, 'today');
         const todayList = document.getElementById('today-list');
         if (!todayB.length) {
-          todayList.innerHTML = `<div class="empty"><div class="empty-icon" style="font-size:0;">${Icons.coffee}</div><h4>Сегодня свободно</h4><p>Поделитесь ссылкой — клиенты запишутся сами</p></div>`;
+          todayList.innerHTML = `<div class="empty anim-fade-up"><div class="empty-icon" style="font-size:0;">${Icons.coffee}</div><h4>Сегодня свободно</h4><p>Поделитесь ссылкой — клиенты запишутся сами</p></div>`;
         } else {
           todayList.innerHTML = todayB.map(b => `
             <div class="row-item">
@@ -162,6 +167,7 @@
               </div>
             </div>`).join('');
         }
+        staggerList(document.getElementById('today-list'));
         renderMasterTabBar('home', { bookings: stats.todayCount || '' });
       }
 

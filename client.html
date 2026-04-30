@@ -113,10 +113,13 @@
 
     function setView(name) {
       ['home','bookings','profile'].forEach(v => {
-        document.getElementById('view-'+v).hidden = v !== name;
+        const el = document.getElementById('view-'+v);
+        el.hidden = v !== name;
+        if (v === name) {
+          el.classList.remove('tab-anim'); void el.offsetWidth;
+          el.classList.add('tab-anim');
+        }
       });
-      const titles = { home:'Главная', bookings:'Мои записи', profile:'Профиль' };
-      document.getElementById('page-title').textContent = titles[name];
     }
 
     async function loadMasters() {
@@ -143,6 +146,7 @@
         list.innerHTML = `<div class="empty"><div class="empty-icon" style="font-size:0;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div><h4>Мастера не найдены</h4><p>Попробуйте другой запрос</p></div>`;
         return;
       }
+      list.classList.remove('stagger'); void list.offsetWidth;
       list.innerHTML = filtered.map(m => {
         const name   = m.profiles?.name || 'Мастер';
         const rating = m.rating > 0 ? `★ ${m.rating.toFixed(1)} · ${m.reviews_count} отзывов` : 'Нет отзывов';
@@ -161,6 +165,7 @@
           <div class="m-cta">Записаться ›</div>
         </a>`;
       }).join('');
+      list.classList.add('stagger');
     }
 
     async function loadMyBookings() {
@@ -180,6 +185,7 @@
         list.innerHTML = `<div class="empty"><div class="empty-icon" style="font-size:0;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div><h4>Записей нет</h4><p>Найдите мастера и запишитесь онлайн</p></div>`;
         return;
       }
+      list.classList.remove('stagger'); void list.offsetWidth;
       list.innerHTML = sorted.map(b => {
         const masterName = b.masters?.profiles?.name || 'Мастер';
         const isCancelled = b.status === 'cancelled';
@@ -198,6 +204,7 @@
         </div>`;
       }).join('');
 
+      list.classList.add('stagger');
       list.querySelectorAll('.row-item[data-id]').forEach(row => {
         row.addEventListener('click', () => {
           const b = _myBookings.find(x => x.id === row.dataset.id); if (!b) return;

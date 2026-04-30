@@ -40,7 +40,9 @@
   --sh-lg: 0 24px 64px rgba(10,10,10,.14);
 
   /* Анимации */
-  --ease: cubic-bezier(.2,.8,.2,1);
+  --ease:        cubic-bezier(.25,.46,.45,.94);
+  --ease-spring: cubic-bezier(.175,.885,.32,1.275);
+  --ease-in:     cubic-bezier(.55,.055,.675,.19);
 
   /* Safe-area */
   --safe-top: env(safe-area-inset-top, 0px);
@@ -1987,6 +1989,154 @@ body.page-exit .auth-wrap {
   padding: 2px 8px;
   border-radius: 100px;
   letter-spacing: .04em;
+}
+
+/* ╔══════════════════════════════════════════════════════════╗
+   ║              ANIMATION SYSTEM                            ║
+   ╚══════════════════════════════════════════════════════════╝ */
+
+/* ── Cross-document View Transitions (Chrome 126+, Safari 18+) ── */
+@view-transition { navigation: auto; }
+
+@keyframes vt-page-in {
+  from { opacity: 0; transform: translateY(18px) scale(.985); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+@keyframes vt-page-out {
+  from { opacity: 1; transform: translateY(0)    scale(1); }
+  to   { opacity: 0; transform: translateY(-8px) scale(.99); }
+}
+::view-transition-old(root) {
+  animation: 180ms var(--ease-in) both vt-page-out;
+}
+::view-transition-new(root) {
+  animation: 340ms var(--ease)    both vt-page-in;
+}
+
+/* ── Staggered list items ─────────────────────────────────── */
+@keyframes stagger-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.stagger > * {
+  animation: stagger-up .32s var(--ease) both;
+}
+.stagger > *:nth-child(1)  { animation-delay:   0ms; }
+.stagger > *:nth-child(2)  { animation-delay:  50ms; }
+.stagger > *:nth-child(3)  { animation-delay: 100ms; }
+.stagger > *:nth-child(4)  { animation-delay: 145ms; }
+.stagger > *:nth-child(5)  { animation-delay: 185ms; }
+.stagger > *:nth-child(6)  { animation-delay: 220ms; }
+.stagger > *:nth-child(7)  { animation-delay: 252ms; }
+.stagger > *:nth-child(8)  { animation-delay: 280ms; }
+.stagger > *:nth-child(9)  { animation-delay: 305ms; }
+.stagger > *:nth-child(n+10) { animation-delay: 325ms; }
+
+/* ── Fade-in with slide ───────────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim-fade-up   { animation: fade-up .3s var(--ease) both; }
+.anim-fade-up-2 { animation: fade-up .3s var(--ease) .08s both; }
+.anim-fade-up-3 { animation: fade-up .3s var(--ease) .16s both; }
+.anim-fade-up-4 { animation: fade-up .3s var(--ease) .24s both; }
+
+/* ── Stat number pop ──────────────────────────────────────── */
+@keyframes stat-pop {
+  0%  { opacity: 0; transform: scale(.7) translateY(6px); }
+  65% { opacity: 1; transform: scale(1.08) translateY(-2px); }
+  100%{ opacity: 1; transform: scale(1)   translateY(0); }
+}
+.anim-stat-pop { animation: stat-pop .45s var(--ease-spring) both; }
+
+/* ── Section cascade (hero → stats → section) ────────────── */
+.app > .hero   { animation: fade-up .35s var(--ease)       both; }
+.app > .stats  { animation: fade-up .35s var(--ease) .08s  both; }
+.app > .section{ animation: fade-up .35s var(--ease) .14s  both; }
+/* only first occurrence */
+.app > section:nth-of-type(2) { animation-delay: .22s; }
+.app > section:nth-of-type(3) { animation-delay: .28s; }
+
+/* ── Spring sheet ─────────────────────────────────────────── */
+.sheet {
+  transition: transform .38s cubic-bezier(.2,1.2,.4,1);
+}
+/* grabber drag indicator */
+.sheet .grabber { transition: width .2s var(--ease); }
+.sheet:active .grabber { width: 52px; }
+
+/* ── Tab content crossfade ────────────────────────────────── */
+@keyframes tab-fade {
+  from { opacity: 0; transform: translateY(8px); }
+}
+.tab-anim { animation: tab-fade .22s var(--ease) both; }
+
+/* ── Tabbar icon spring on active ────────────────────────── */
+.tabbar a.active svg {
+  animation: tab-icon-pop .3s var(--ease-spring) both;
+}
+@keyframes tab-icon-pop {
+  0%  { transform: scale(.7) translateY(4px); }
+  60% { transform: scale(1.15) translateY(-2px); }
+  100%{ transform: scale(1) translateY(0); }
+}
+
+/* ── Skeleton shimmer upgrade ─────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position:  200% 0; }
+  100% { background-position: -200% 0; }
+}
+.sk {
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 20%,
+    var(--border)    45%,
+    var(--surface-2) 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.3s ease-in-out infinite;
+}
+
+/* ── Button tap spring ────────────────────────────────────── */
+.btn:active       { transform: scale(.97); }
+.btn-action:active{ transform: scale(.95); }
+.row-item.clickable { transition: transform .12s var(--ease), box-shadow .12s; }
+.row-item.clickable:active { transform: scale(.985); }
+.service-card:active { transform: scale(.985); }
+
+/* ── Success icon bounce ──────────────────────────────────── */
+@keyframes pop {
+  0%  { transform: scale(.3) rotate(-10deg); opacity: 0; }
+  60% { transform: scale(1.15) rotate(3deg); opacity: 1; }
+  80% { transform: scale(.95) rotate(-1deg); }
+  100%{ transform: scale(1) rotate(0); opacity: 1; }
+}
+.success-icon { animation: pop .5s var(--ease-spring) both; }
+
+/* ── Toast upgrade ────────────────────────────────────────── */
+@keyframes toast-in  { from { opacity:0; transform:translateX(-50%) translateY(20px) scale(.9); } }
+@keyframes toast-out { to   { opacity:0; transform:translateX(-50%) translateY(10px) scale(.95); } }
+.toast.show { animation: toast-in .28s var(--ease-spring) both; }
+.toast:not(.show) { animation: toast-out .2s var(--ease) both; }
+
+/* ── Link card shine sweep ────────────────────────────────── */
+.link-card {
+  overflow: hidden;
+}
+.link-card::after {
+  content: "";
+  position: absolute;
+  top: -60%; left: -80%;
+  width: 60%; height: 220%;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.07) 50%, transparent 60%);
+  transform: skewX(-15deg);
+  animation: card-shine 4s ease-in-out 1.2s infinite;
+  pointer-events: none;
+}
+@keyframes card-shine {
+  0%, 100% { left: -80%; }
+  40%       { left:  140%; }
 }
 
 /* ============= Public page: back topbar ============= */
