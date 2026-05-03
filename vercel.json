@@ -1,6 +1,13 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    { "source": "/inbox",        "destination": "/inbox.html" },
+    { "source": "/settings",     "destination": "/settings.html" },
+    { "source": "/profile-edit", "destination": "/profile-edit.html" },
+    { "source": "/clients",      "destination": "/clients.html" },
+    { "source": "/messages",     "destination": "/messages.html" }
+  ],
   "redirects": [
     {
       "source": "/(.*)",

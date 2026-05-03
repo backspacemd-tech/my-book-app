@@ -10,39 +10,23 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 </head>
-<body style="background:#0E1621;">
+<body style="background:#0E1621;margin:0;">
 <div class="tg-page">
 
-  <!-- Header -->
   <div class="tg-header">
-    <button class="tg-back" id="back-btn" aria-label="Назад">
+    <button class="tg-back" onclick="history.length>1?history.back():location.href='/'" aria-label="Назад">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
     </button>
     <div class="tg-av" id="tg-av">?</div>
     <div class="tg-hinfo">
-      <div class="tg-hname"  id="tg-name">—</div>
-      <div class="tg-hstatus" id="tg-status">в сети</div>
-    </div>
-    <button class="tg-more" id="more-btn" aria-label="Ещё">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-    </button>
-  </div>
-
-  <!-- Messages -->
-  <div class="tg-msgs" id="tg-msgs">
-    <div class="tg-empty" id="tg-empty">
-      <div class="tg-empty-icon">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      </div>
-      <p>Начните переписку</p>
+      <div class="tg-hname"  id="tg-name">Загрузка…</div>
+      <div class="tg-hstatus" id="tg-status"></div>
     </div>
   </div>
 
-  <!-- Input -->
+  <div class="tg-msgs" id="tg-msgs"></div>
+
   <div class="tg-input-bar">
-    <button class="tg-attach" id="attach-btn" aria-label="Вложение">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-    </button>
     <div class="tg-input-wrap">
       <textarea id="msg-input" placeholder="Сообщение…" rows="1"></textarea>
     </div>
@@ -57,199 +41,190 @@
 <script src="app.js"></script>
 <script>
 (async () => {
-  const params   = new URLSearchParams(location.search);
-  const masterId = params.get('master');
-  const partnerId= params.get('partner');
+  const p        = new URLSearchParams(location.search);
+  const masterId = p.get('master');
+  const otherId  = p.get('partner');
+
+  if (!masterId || !otherId) {
+    document.getElementById('tg-msgs').innerHTML =
+      '<div class="tg-system" style="margin-top:40px;">Неверные параметры чата</div>';
+    return;
+  }
 
   const auth = await requireAuth();
   if (!auth) return;
   const me = auth.profile;
 
-  const otherId = (me.id === masterId) ? partnerId : masterId;
-  const mId     = masterId;
-
-  if (!otherId || !mId) {
-    document.getElementById('tg-msgs').innerHTML =
-      '<div class="tg-system">Неверные параметры чата</div>';
-    return;
-  }
-
-  // Load partner profile
+  // Load partner name
   const { data: other } = await sb.from('profiles')
     .select('name, avatar_url').eq('id', otherId).single();
   const otherName    = other?.name || 'Пользователь';
   const otherInitial = otherName.charAt(0).toUpperCase();
-
-  document.getElementById('tg-name').textContent   = otherName;
-  document.getElementById('tg-av').textContent     = otherInitial;
+  document.getElementById('tg-name').textContent = otherName;
+  const avEl = document.getElementById('tg-av');
   if (other?.avatar_url) {
-    document.getElementById('tg-av').innerHTML =
-      `<img src="${other.avatar_url}" alt="${otherName}"/>`;
+    avEl.innerHTML = `<img src="${other.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>`;
+  } else {
+    avEl.textContent = otherInitial;
   }
 
-  // Back
-  document.getElementById('back-btn').addEventListener('click', () => {
-    if (history.length > 1) history.back();
-    else location.href = '/';
-  });
-
-  // More menu
-  document.getElementById('more-btn').addEventListener('click', () => {
-    openSheet(`
-      <h3>${otherName}</h3>
-      <div class="list mt-12">
-        <div class="row-item clickable" onclick="closeSheet();location.href='/p?u=${otherId}'">
-          <div class="meta"><div class="title">Профиль</div></div>
-        </div>
-      </div>
-      <button class="btn btn-secondary mt-12" onclick="closeSheet()">Закрыть</button>
-    `);
-  });
-
-  let _msgs = [];
-
+  // ── Load messages (simple filter — no complex OR) ──────────
   async function loadMsgs() {
-    const { data } = await sb.from('messages')
-      .select('*').eq('master_id', mId)
-      .or(`and(from_id.eq.${me.id},to_id.eq.${otherId}),and(from_id.eq.${otherId},to_id.eq.${me.id})`)
-      .order('created_at', { ascending: true });
-    _msgs = data || [];
-    render(_msgs);
+    // Get all messages in this thread by master_id
+    // then filter client-side for the two participants
+    const { data, error } = await sb.from('messages')
+      .select('*')
+      .eq('master_id', masterId)
+      .order('created_at', { ascending: true })
+      .limit(200);
 
-    // Mark as read
-    const unread = _msgs.filter(m => m.to_id === me.id && !m.read_at).map(m => m.id);
+    if (error) { console.error('[Chat] load error:', error); return; }
+
+    // Filter to only messages between me and other
+    const thread = (data || []).filter(m =>
+      (m.from_id === me.id && m.to_id === otherId) ||
+      (m.from_id === otherId && m.to_id === me.id)
+    );
+
+    render(thread);
+
+    // Mark received messages as read
+    const unread = thread.filter(m => m.to_id === me.id && !m.read_at).map(m => m.id);
     if (unread.length) {
       await sb.from('messages').update({ read_at: new Date().toISOString() }).in('id', unread);
     }
   }
 
-  function fmtTime(iso) {
-    return new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  // ── Render ─────────────────────────────────────────────────
+  function esc(t) {
+    return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  }
+  function fmt(iso) {
+    return new Date(iso).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
   }
   function fmtDate(iso) {
-    const d = new Date(iso);
-    const today = new Date();
-    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
-    if (d.toDateString() === today.toDateString()) return 'Сегодня';
-    if (d.toDateString() === yesterday.toDateString()) return 'Вчера';
-    return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    const d = new Date(iso), t = new Date();
+    const y = new Date(t); y.setDate(t.getDate()-1);
+    if (d.toDateString()===t.toDateString()) return 'Сегодня';
+    if (d.toDateString()===y.toDateString()) return 'Вчера';
+    return d.toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
   }
-  function esc(t) {
-    return String(t)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/\n/g,'<br>');
-  }
+
+  const container = document.getElementById('tg-msgs');
 
   function render(msgs) {
-    const container = document.getElementById('tg-msgs');
-    const empty     = document.getElementById('tg-empty');
-
     if (!msgs.length) {
-      if (empty) empty.style.display = 'flex';
+      container.innerHTML = `
+        <div class="tg-empty">
+          <div class="tg-empty-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <p>Начните переписку</p>
+        </div>`;
       return;
     }
-    if (empty) empty.style.display = 'none';
 
-    const wasAtBottom =
-      container.scrollHeight - container.scrollTop - container.clientHeight < 60;
+    const atBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
+    let html = '', lastDate = '', lastFrom = '';
 
-    let html = '';
-    let lastDate   = '';
-    let lastFromId = '';
+    for (let i = 0; i < msgs.length; i++) {
+      const m      = msgs[i];
+      const isMine = m.from_id === me.id;
+      const dKey   = m.created_at.slice(0,10);
+      const isLast = !msgs[i+1] || msgs[i+1].from_id !== m.from_id;
 
-    msgs.forEach((m, i) => {
-      const isMine  = m.from_id === me.id;
-      const dateKey = m.created_at.slice(0, 10);
-      const isFirst = lastFromId !== m.from_id;
-      const isLast  = !msgs[i + 1] || msgs[i + 1].from_id !== m.from_id;
-      lastFromId    = m.from_id;
-
-      // Date separator
-      if (dateKey !== lastDate) {
+      if (dKey !== lastDate) {
         html += `<div class="tg-date"><span>${fmtDate(m.created_at)}</span></div>`;
-        lastDate = dateKey;
+        lastDate = dKey;
       }
 
-      // Read tick SVG
-      const tick = isMine ? `
-        <span class="tg-check">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            ${m.read_at
-              ? '<polyline points="1 12 8 19 23 4"/><polyline points="7 12 14 19 23 4" style="opacity:.6"/>'
-              : '<polyline points="2 12 8 18 22 4"/>'}
-          </svg>
-        </span>` : '';
+      const gap = lastFrom && lastFrom !== m.from_id ? 'margin-top:8px;' : 'margin-top:2px;';
+      lastFrom = m.from_id;
 
-      const avHtml = !isMine
+      const avHtml = !isMine && isLast
         ? `<div class="tg-av-sm">${otherInitial}</div>`
+        : !isMine
+        ? `<div style="width:30px;flex-shrink:0;"></div>`
         : '';
 
-      const rowClass = [
-        'tg-row',
-        isMine ? 'me' : 'them',
-        isFirst ? 'first' : '',
-        isLast  ? 'tail'  : 'no-av',
-      ].join(' ');
+      const tick = isMine
+        ? `<span class="tg-check"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">
+            ${m.read_at
+              ? '<polyline points="1 9 5 13 15 3" style="stroke:var(--tg-read)"/><polyline points="5 9 9 13 15 3" style="stroke:var(--tg-read);opacity:.7"/>'
+              : '<polyline points="2 9 6 13 14 3" style="stroke:rgba(255,255,255,.5)"/>'}
+          </svg></span>` : '';
 
       html += `
-        <div class="${rowClass}" style="margin-top:${isFirst && i > 0 ? '8' : '1'}px;">
+        <div class="tg-row ${isMine?'me':'them'}" style="${gap}">
           ${avHtml}
-          <div>
+          <div class="tg-bubble-wrap">
             <div class="tg-bubble">
               ${esc(m.text)}
               <div class="tg-meta">
-                <span class="tg-time">${fmtTime(m.created_at)}</span>
+                <span class="tg-time">${fmt(m.created_at)}</span>
                 ${tick}
               </div>
             </div>
           </div>
         </div>`;
-    });
+    }
 
     container.innerHTML = html;
-    if (wasAtBottom || msgs.length <= 20) {
-      container.scrollTop = container.scrollHeight;
-    }
+    if (atBottom || msgs.length <= 30) container.scrollTop = container.scrollHeight;
   }
 
   await loadMsgs();
 
-  // Input auto-resize
+  // ── Send ───────────────────────────────────────────────────
   const input  = document.getElementById('msg-input');
-  const sendBtn= document.getElementById('send-btn');
+  const sendBtn = document.getElementById('send-btn');
 
   input.addEventListener('input', () => {
     sendBtn.disabled = !input.value.trim();
     input.style.height = 'auto';
     input.style.height = Math.min(input.scrollHeight, 140) + 'px';
   });
+
   input.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey && window.innerWidth > 600) {
       e.preventDefault(); doSend();
     }
   });
+
   sendBtn.addEventListener('click', doSend);
 
   async function doSend() {
     const text = input.value.trim();
-    if (!text) return;
+    if (!text || sendBtn.disabled) return;
     sendBtn.disabled = true;
     input.value = ''; input.style.height = 'auto';
-    await sb.from('messages').insert({
-      from_id: me.id, to_id: otherId, master_id: mId, text
+
+    const { error } = await sb.from('messages').insert({
+      from_id:   me.id,
+      to_id:     otherId,
+      master_id: masterId,
+      text,
     });
+
+    if (error) {
+      toast('Ошибка: ' + error.message);
+      sendBtn.disabled = false;
+    } else {
+      await loadMsgs();
+    }
+    input.focus();
   }
 
-  // Realtime
-  sb.channel(`tg-${mId}`)
+  // ── Realtime ───────────────────────────────────────────────
+  sb.channel(`chat:${masterId}:${[me.id,otherId].sort().join(':')}`)
     .on('postgres_changes', {
       event: 'INSERT', schema: 'public', table: 'messages',
-      filter: `master_id=eq.${mId}`,
-    }, async () => { await loadMsgs(); })
-    .subscribe();
-
-  // Status: show typing hint
-  document.getElementById('tg-status').textContent = 'в сети';
+      filter: `master_id=eq.${masterId}`,
+    }, () => loadMsgs())
+    .subscribe(status => {
+      document.getElementById('tg-status').textContent =
+        status === 'SUBSCRIBED' ? 'в сети' : 'подключение…';
+    });
 })();
 </script>
 </body>

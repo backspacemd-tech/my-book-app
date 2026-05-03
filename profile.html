@@ -1,376 +1,360 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0A0A0A" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="apple-touch-icon-512.png">
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="BookMe" />
-  <title>BookMe — профиль</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"/>
+  <meta name="theme-color" content="#0A0A0A"/>
+  <title>BookMe · Профиль</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <a class="icon-btn-circle" href="/master" aria-label="Назад" style="display:inline-flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></a>
-      <span></span>
-      <span class="right-spacer"></span>
-    </header>
+<div class="app">
+  <header class="topbar">
+    <span class="left-spacer"></span>
+    <span></span>
+    <!-- Settings gear -->
+    <a href="/settings" class="icon-btn-circle" aria-label="Настройки" style="display:inline-flex;align-items:center;justify-content:center;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </a>
+  </header>
 
+  <!-- Profile header -->
+  <div style="padding:8px 20px 0;">
     <!-- Cover -->
-    <div class="cover-upload-area" id="cover-area" style="margin-top:8px;">
-      <div class="cover-label" id="cover-label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Загрузить обложку</div>
+    <div id="cover-area" style="height:120px;border-radius:var(--r-lg);background:linear-gradient(135deg,#0A0A0A 0%,#2D1B69 60%,#4C1D95 100%);overflow:hidden;position:relative;margin-bottom:-44px;cursor:pointer;">
+      <div id="cover-label" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);font-size:13px;gap:6px;background:rgba(0,0,0,.2);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Добавить обложку
+      </div>
     </div>
 
-    <!-- Avatar + name -->
-    <section style="text-align:center;padding:10px 24px 4px;">
-      <div class="avatar-upload-wrap" id="avatar-wrap" style="margin:-44px auto 12px;">
-        <div class="mini-avatar gradient" id="avatar"
-          style="width:88px;height:88px;font-size:32px;border:4px solid var(--bg);box-sizing:content-box;background-size:cover;background-position:center;">?</div>
-        <div class="avatar-overlay"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
-      </div>
-      <div style="font-size:22px;font-weight:700;letter-spacing:-0.02em;" id="display-name">—</div>
-      <div class="muted" style="font-size:14px;" id="display-email">—</div>
-    </section>
-
-    <form id="profile-form" style="padding:14px 20px 0;">
-
-      <!-- О мастере -->
-      <p class="section-label">О мастере</p>
-      <div class="card" style="margin-bottom:18px;">
-        <div class="field"><label for="f-name">Имя / Название</label><input id="f-name" type="text" placeholder="Анна Соколова" /></div>
-        <div class="field"><label for="f-phone">Телефон</label><input id="f-phone" type="tel" placeholder="+1 555 000 00 00" autocomplete="tel" /></div>
-        <div class="field"><label for="f-city">Город</label><input id="f-city" type="text" placeholder="Москва, Кишинёв, Бухарест…" /></div>
-        <div class="field" style="margin-bottom:0;"><label for="f-desc">Описание</label><textarea id="f-desc" placeholder="Расскажите клиентам о себе"></textarea></div>
-      </div>
-
-      <!-- Специализация -->
-      <p class="section-label">Специализация</p>
-      <div style="margin-bottom:18px;">
-        <div class="chips" id="spec-chips" style="flex-wrap:wrap;gap:8px;">
-          <div class="chip" data-val="beauty">Бьюти</div>
-          <div class="chip" data-val="barber">Барбер</div>
-          <div class="chip" data-val="nail">Ногти</div>
-          <div class="chip" data-val="massage">Массаж</div>
-          <div class="chip" data-val="trainer">Тренер</div>
-          <div class="chip" data-val="tattoo">Тату</div>
-          <div class="chip" data-val="photo">Фото</div>
-          <div class="chip" data-val="other">Другое</div>
+    <!-- Avatar row -->
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;padding:0 4px;position:relative;z-index:2;">
+      <div id="avatar-wrap" style="cursor:pointer;position:relative;">
+        <div id="avatar" style="width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,#1F1F22,#4A4A50);color:white;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:700;border:4px solid var(--bg);box-sizing:content-box;background-size:cover;background-position:center;">?</div>
+        <div style="position:absolute;bottom:4px;right:4px;width:26px;height:26px;border-radius:50%;background:var(--text);color:var(--bg);display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
         </div>
       </div>
+      <a href="/profile-edit" class="btn btn-secondary btn-sm" style="margin-bottom:8px;">Редактировать</a>
+    </div>
 
-      <!-- Ссылка -->
-      <p class="section-label">Личная ссылка</p>
-      <div class="card" style="margin-bottom:18px;">
-        <div class="field" style="margin-bottom:0;">
-          <label for="f-username">Username</label>
-          <input id="f-username" type="text" pattern="[a-z0-9_]{3,20}" placeholder="anna" />
-          <div class="field-hint"><span id="username-hint-origin">bookme-app.online</span>/<span id="username-preview">username</span></div>
-        </div>
+    <!-- Name & info -->
+    <div style="padding:10px 4px 0;">
+      <div style="font-size:22px;font-weight:700;letter-spacing:-0.02em;" id="p-name">—</div>
+      <div style="font-size:14px;color:var(--text-2);margin-top:2px;" id="p-specialty"></div>
+      <div style="font-size:14px;color:var(--text-2);margin-top:2px;display:flex;align-items:center;gap:5px;" id="p-city-wrap" hidden>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="p-city"></span>
       </div>
+      <p style="font-size:14px;color:var(--text-2);margin:8px 0 0;line-height:1.55;" id="p-bio"></p>
+    </div>
 
-      <!-- Настройки -->
-      <p class="section-label">Настройки</p>
-      <div class="card" style="margin-bottom:18px;padding:0;">
-        <div class="row-item" style="border:none;box-shadow:none;background:transparent;">
-          <div class="meta"><div class="title" style="font-size:15px;">Принимаю записи онлайн</div><div class="sub">Клиенты увидят кнопку «Записаться»</div></div>
-          <label class="switch"><input type="checkbox" id="f-online" /><span class="slider"></span></label>
-        </div>
-        <div style="border-top:1px solid var(--border);"></div>
-        <div class="row-item" style="border:none;box-shadow:none;background:transparent;">
-          <div class="meta"><div class="title" style="font-size:15px;">Язык интерфейса</div><div class="sub" id="lang-sub">Авто</div></div>
-          <div id="lang-toggle" style="display:flex;gap:4px;">
-            <button type="button" class="btn btn-sm" id="lang-ru" style="padding:6px 12px;font-size:13px;">RU</button>
-            <button type="button" class="btn btn-sm" id="lang-en" style="padding:6px 12px;font-size:13px;">EN</button>
-          </div>
-        </div>
+    <!-- Stats row -->
+    <div style="display:flex;gap:24px;padding:14px 4px 0;border-bottom:1px solid var(--border);padding-bottom:14px;">
+      <div style="text-align:center;">
+        <div style="font-size:18px;font-weight:700;" id="stat-bookings">0</div>
+        <div style="font-size:12px;color:var(--text-2);">Записей</div>
       </div>
-
-      <!-- Подписка -->
-      <p class="section-label">Подписка</p>
-      <a class="row-item clickable" href="/subscription" style="margin-bottom:18px;text-decoration:none;">
-        <div class="mini-avatar gradient" id="plan-icon" style="font-size:0;display:inline-flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
-        <div class="meta"><div class="title" id="plan-title">—</div><div class="sub" id="plan-sub">—</div></div>
-        <div class="muted" style="font-size:18px;">›</div>
-      </a>
-
-      <!-- Инструменты -->
-      <p class="section-label">Инструменты</p>
-      <div class="card" style="margin-bottom:18px;padding:0;">
-        <a class="row-item clickable" href="/chat" style="border:none;box-shadow:none;background:transparent;text-decoration:none;">
-          <div class="mini-avatar gradient" style="font-size:0;display:inline-flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></div>
-          <div class="meta"><div class="title" style="font-size:15px;">ИИ-ассистент</div><div class="sub">Советы, анализ записей</div></div>
-          <div class="muted" style="font-size:18px;">›</div>
-        </a>
-        <div style="border-top:1px solid var(--border);"></div>
-        <a class="row-item clickable" href="/analytics" style="border:none;box-shadow:none;background:transparent;text-decoration:none;">
-          <div class="mini-avatar gradient" style="font-size:0;display:inline-flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 16 4-4 4 4 4-6"/></svg></div>
-          <div class="meta"><div class="title" style="font-size:15px;">Аналитика</div><div class="sub">Выручка, записи, средний чек</div></div>
-          <div class="muted" style="font-size:18px;">›</div>
-        </a>
+      <div style="text-align:center;">
+        <div style="font-size:18px;font-weight:700;" id="stat-portfolio">0</div>
+        <div style="font-size:12px;color:var(--text-2);">Фото</div>
       </div>
+      <div style="text-align:center;">
+        <div style="font-size:18px;font-weight:700;" id="stat-rating">—</div>
+        <div style="font-size:12px;color:var(--text-2);">Рейтинг</div>
+      </div>
+    </div>
 
-      <button type="submit" class="btn btn-primary">Сохранить изменения</button>
-      <div style="height:10px;"></div>
-      <a class="btn btn-secondary" href="/master">Отмена</a>
-    </form>
-
-    <!-- Portfolio -->
-    <section class="section" style="margin-top:24px;">
-      <div class="section-head"><h3>Портфолио</h3><span class="muted" style="font-size:13px;" id="portfolio-count">0 фото</span></div>
-      <div class="portfolio-grid" id="portfolio-grid"></div>
-    </section>
-
-    <!-- Team -->
-    <section class="section" style="margin-top:24px;">
-      <div class="section-head"><h3>Команда</h3><span class="muted" style="font-size:13px;" id="team-count">0 мастеров</span></div>
-      <div class="list" id="team-list"></div>
-      <div style="height:10px;"></div>
-      <button class="team-add-btn" id="team-add-btn">
-        <div class="mini-avatar" style="font-size:20px;background:var(--surface-2);">+</div>
-        <span>Добавить мастера</span>
-      </button>
-    </section>
-
-    <section style="padding:24px 20px;">
-      <!-- Switch to client mode -->
-      <button class="btn btn-secondary" id="client-mode-btn" style="margin-bottom:10px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6"/></svg>
-        Записаться как клиент
-      </button>
-      <button class="btn btn-danger" id="logout-btn">Выйти из аккаунта</button>
-    </section>
-
-    <style>
-      .section-label {
-        font-size:13px;color:var(--text-2);text-transform:uppercase;
-        letter-spacing:.06em;margin:0 4px 10px;font-weight:600;padding:0 20px;
-      }
-    </style>
+    <!-- My link -->
+    <div id="link-row" style="padding:12px 4px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-size:12px;color:var(--text-2);font-weight:500;">Моя ссылка для записи</div>
+        <div style="font-size:14px;font-weight:600;font-family:monospace;" id="p-link">—</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-action btn-sm" id="p-copy" style="padding:8px 12px;font-size:13px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Копировать
+        </button>
+        <button class="btn-action btn-sm" id="p-share" style="padding:8px 12px;font-size:13px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          Поделиться
+        </button>
+      </div>
+    </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js"></script>
-  <script src="app.js"></script>
-  <script>
-    let _profile, _master;
+  <!-- Tabs: Services / Portfolio -->
+  <div class="tabs" style="margin:12px 20px 0;">
+    <div class="tab active" id="tab-portfolio">Портфолио</div>
+    <div class="tab" id="tab-services">Услуги</div>
+  </div>
 
-    (async () => {
-      const auth = await requireAuth('master');
-      if (!auth) return;
-      const { profile } = auth;
-      _profile = profile;
+  <!-- Portfolio (Instagram 3-col grid) -->
+  <div id="view-portfolio">
+    <div class="insta-grid" id="portfolio-grid"></div>
+    <div style="padding:14px 20px;">
+      <button class="btn btn-secondary btn-sm" id="add-photo-btn" style="width:100%;gap:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Добавить фото
+      </button>
+    </div>
+  </div>
 
-      const { data: master } = await sb.from('masters').select('*').eq('id', profile.id).single();
-      _master = master || {};
+  <!-- Services view -->
+  <div id="view-services" hidden>
+    <div class="list" style="padding:12px 20px;gap:10px;display:flex;flex-direction:column;" id="services-list"></div>
+  </div>
 
-      // Render avatar
-      function renderAvatar() {
-        const el = document.getElementById('avatar');
-        if (profile.avatar_url) { el.style.backgroundImage = `url(${profile.avatar_url})`; el.textContent = ''; }
-        else { el.style.backgroundImage = ''; el.textContent = (profile.name||'?').charAt(0).toUpperCase(); }
-      }
-      renderAvatar();
+</div>
 
-      // Render cover
-      function renderCover() {
-        const area = document.getElementById('cover-area');
-        const lbl  = document.getElementById('cover-label');
-        area.querySelector('img')?.remove();
-        if (_master.cover_url) {
-          const img = Object.assign(document.createElement('img'), { src: _master.cover_url });
-          img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
-          area.insertBefore(img, lbl);
-          lbl.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Сменить обложку';
-        } else { lbl.textContent = '📷 Загрузить обложку'; }
-      }
-      renderCover();
+<!-- Lightbox -->
+<div id="lightbox" hidden style="position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.95);display:none;align-items:center;justify-content:center;">
+  <button onclick="closeLightbox()" style="position:absolute;top:calc(16px + var(--safe-top));right:16px;background:rgba(255,255,255,.15);border:none;width:40px;height:40px;border-radius:50%;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
+  <img id="lightbox-img" style="max-width:100%;max-height:90dvh;object-fit:contain;border-radius:4px;"/>
+</div>
 
-      // Fill form
-      document.getElementById('display-name').textContent  = profile.name || 'Без имени';
-      document.getElementById('display-email').textContent = profile.email;
-      document.getElementById('f-name').value     = profile.name || '';
-      document.getElementById('f-phone').value    = _master.phone || '';
-      document.getElementById('f-city').value     = _master.city  || '';
-      document.getElementById('f-username').value = _master.username || '';
-      document.getElementById('f-desc').value     = _master.description || '';
-      document.getElementById('f-online').checked = _master.accepts_online !== false;
-      document.getElementById('username-hint-origin').textContent = window.location.host;
-      document.getElementById('username-preview').textContent = _master.username || 'username';
+<style>
+/* Instagram 3-column portfolio grid */
+.insta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  padding: 2px;
+}
+.insta-item {
+  aspect-ratio: 1;
+  overflow: hidden;
+  position: relative;
+  background: var(--surface-2);
+  cursor: pointer;
+}
+.insta-item img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform .2s;
+}
+.insta-item:active img { transform: scale(.96); }
+.insta-add {
+  aspect-ratio: 1;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface-2);
+  cursor: pointer;
+  color: var(--text-3);
+  border: 2px dashed var(--border-strong);
+}
+.insta-del {
+  position: absolute; top: 6px; right: 6px;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(0,0,0,.65); color: white;
+  border: none; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+</style>
 
-      // Specialty chips
-      const specChips = document.querySelectorAll('#spec-chips .chip');
-      const setSpec = (val) => specChips.forEach(c => c.classList.toggle('active', c.dataset.val === val));
-      setSpec(_master.specialty || '');
-      specChips.forEach(c => c.addEventListener('click', () => setSpec(c.dataset.val)));
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>
+let _profile, _master;
 
-      // Language toggle
-      const savedLang = localStorage.getItem('bm_lang') || navigator.language.split('-')[0];
-      const applyLang = (l) => {
-        localStorage.setItem('bm_lang', l);
-        document.getElementById('lang-sub').textContent = l === 'ru' ? 'Русский' : 'English';
-        document.getElementById('lang-ru').style.fontWeight = l === 'ru' ? '700' : '400';
-        document.getElementById('lang-en').style.fontWeight = l === 'en' ? '700' : '400';
-      };
-      applyLang(savedLang);
-      document.getElementById('lang-ru').addEventListener('click', () => applyLang('ru'));
-      document.getElementById('lang-en').addEventListener('click', () => applyLang('en'));
+(async () => {
+  const auth = await requireAuth('master');
+  if (!auth) return;
+  _profile = auth.profile;
 
-      // Master → client mode
-      document.getElementById('client-mode-btn').addEventListener('click', () => {
-        sessionStorage.setItem('bm_client_mode', '1');
-        window.location.href = '/client';
+  // Load master record
+  const { data: master } = await sb.from('masters').select('*').eq('id', _profile.id).single();
+  _master = master || {};
+
+  // Render avatar
+  const avatarEl = document.getElementById('avatar');
+  if (_profile.avatar_url) {
+    avatarEl.style.backgroundImage = `url(${_profile.avatar_url})`;
+    avatarEl.textContent = '';
+  } else {
+    avatarEl.textContent = (_profile.name||'?').charAt(0).toUpperCase();
+  }
+
+  // Cover
+  const coverEl = document.getElementById('cover-area');
+  if (_master.cover_url) {
+    coverEl.style.backgroundImage = `url(${_master.cover_url})`;
+    coverEl.style.backgroundSize = 'cover';
+    coverEl.style.backgroundPosition = 'center';
+    document.getElementById('cover-label').style.display = 'none';
+  }
+
+  // Info
+  document.getElementById('p-name').textContent = _profile.name || 'Без имени';
+  document.getElementById('p-specialty').textContent = _master.specialty || '';
+  if (_master.city) {
+    document.getElementById('p-city-wrap').hidden = false;
+    document.getElementById('p-city').textContent = _master.city;
+  }
+  if (_master.description) {
+    document.getElementById('p-bio').textContent = _master.description;
+  }
+
+  // Stats
+  const { count: bookingsCount } = await sb.from('bookings')
+    .select('id', { count: 'exact', head: true }).eq('master_id', _profile.id);
+  document.getElementById('stat-bookings').textContent = bookingsCount || 0;
+  if (_master.rating > 0) {
+    document.getElementById('stat-rating').textContent = _master.rating.toFixed(1) + '★';
+  }
+
+  // Link
+  const username = _master.username || _profile.id;
+  const pubUrl   = `https://bookme-app.online/p?u=${username}`;
+  document.getElementById('p-link').textContent = `bookme-app.online/${username}`;
+  document.getElementById('p-copy').onclick  = () => copyToClipboard(pubUrl);
+  document.getElementById('p-share').onclick = async () => {
+    const ok = await shareLink(pubUrl, _profile.name || 'BookMe');
+    if (!ok) copyToClipboard(pubUrl);
+  };
+
+  // Avatar upload with crop
+  document.getElementById('avatar-wrap').addEventListener('click', async () => {
+    try {
+      const blob = await pickAndCrop({ aspectRatio: 1, cropSize: 300 });
+      toast('Загружаем…');
+      const url = await uploadFile('avatars', `${_profile.id}/avatar`, blob);
+      if (!url) return;
+      await sb.from('profiles').update({ avatar_url: url }).eq('id', _profile.id);
+      avatarEl.style.backgroundImage = `url(${url})`; avatarEl.textContent = '';
+      toast('Фото обновлено', { icon: '✓' });
+    } catch {}
+  });
+
+  // Cover upload with crop
+  coverEl.addEventListener('click', async () => {
+    try {
+      const blob = await pickAndCrop({ aspectRatio: 16/9, cropSize: 340 });
+      toast('Загружаем…');
+      const url = await uploadFile('avatars', `${_profile.id}/cover`, blob);
+      if (!url) return;
+      await sb.from('masters').update({ cover_url: url }).eq('id', _profile.id);
+      coverEl.style.backgroundImage = `url(${url})`;
+      coverEl.style.backgroundSize = 'cover';
+      document.getElementById('cover-label').style.display = 'none';
+      toast('Обложка обновлена', { icon: '✓' });
+    } catch {}
+  });
+
+  // Tabs
+  document.getElementById('tab-portfolio').addEventListener('click', () => switchTab('portfolio'));
+  document.getElementById('tab-services').addEventListener('click', () => switchTab('services'));
+
+  function switchTab(t) {
+    document.getElementById('tab-portfolio').classList.toggle('active', t === 'portfolio');
+    document.getElementById('tab-services').classList.toggle('active', t === 'services');
+    document.getElementById('view-portfolio').hidden = t !== 'portfolio';
+    document.getElementById('view-services').hidden  = t !== 'services';
+    if (t === 'services') loadServices();
+  }
+
+  // Portfolio
+  const portfolioInput = Object.assign(document.createElement('input'),
+    { type:'file', accept:'image/*', style:'display:none', multiple: true });
+  document.body.appendChild(portfolioInput);
+
+  async function loadPortfolio() {
+    const { data: photos = [] } = await sb.from('portfolio')
+      .select('*').eq('master_id', _profile.id).order('created_at', { ascending: false });
+
+    document.getElementById('stat-portfolio').textContent = photos.length;
+
+    const grid = document.getElementById('portfolio-grid');
+    grid.innerHTML = photos.map(p => `
+      <div class="insta-item" data-url="${p.url}" data-id="${p.id}">
+        <img src="${p.url}" alt="" loading="lazy"/>
+        <button class="insta-del" onclick="delPhoto('${p.id}',event)">×</button>
+      </div>`).join('') +
+      `<div class="insta-add" id="grid-add">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      </div>`;
+
+    grid.querySelectorAll('.insta-item').forEach(item => {
+      item.addEventListener('click', e => {
+        if (e.target.classList.contains('insta-del')) return;
+        openLightbox(item.dataset.url);
       });
+    });
+    document.getElementById('grid-add').addEventListener('click', () => portfolioInput.click());
+  }
 
-      // Subscription info
-      const plan = _master.plan || 'trial';
-      const planLabels = { trial:'Пробный период', free:'Free', pro:'Pro', studio:'Studio' };
-      document.getElementById('plan-title').textContent = planLabels[plan] || plan;
-      document.getElementById('plan-sub').textContent = _master.next_billing
-        ? `Следующее списание: ${new Date(_master.next_billing).toLocaleDateString('ru-RU')}`
-        : (plan === 'trial' ? 'Нажмите для выбора тарифа' : 'Активная подписка');
+  portfolioInput.addEventListener('change', async () => {
+    const files = [...portfolioInput.files]; if (!files.length) return;
+    toast(`Загружаем ${files.length} фото…`);
+    for (const file of files) {
+      const url = await uploadFile('portfolio', `${_profile.id}/${Date.now()}`, file);
+      if (url) await sb.from('portfolio').insert({ master_id: _profile.id, url });
+    }
+    portfolioInput.value = '';
+    await loadPortfolio();
+    toast('Фото добавлено', { icon: '✓' });
+  });
 
-      // Username preview
-      document.getElementById('f-username').addEventListener('input', e => {
-        e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g,'');
-        document.getElementById('username-preview').textContent = e.target.value || 'username';
-      });
+  document.getElementById('add-photo-btn').addEventListener('click', () => portfolioInput.click());
 
-      // Avatar upload
-      const avatarInput = Object.assign(document.createElement('input'), { type:'file', accept:'image/*', style:'display:none' });
-      document.body.appendChild(avatarInput);
-      document.getElementById('avatar-wrap').addEventListener('click', () => avatarInput.click());
-      avatarInput.addEventListener('change', async () => {
-        const file = avatarInput.files[0]; if (!file) return;
-        if (file.size > 3*1024*1024) { toast('Фото слишком большое (макс. 3 МБ)'); return; }
-        toast('Загружаем…');
-        const url = await uploadFile('avatars', `${profile.id}/avatar`, file);
-        if (!url) return;
-        await sb.from('profiles').update({ avatar_url: url }).eq('id', profile.id);
-        profile.avatar_url = url; renderAvatar();
-        toast('Фото обновлено', { icon:'✓' });
-      });
+  window.delPhoto = async (id, e) => {
+    e.stopPropagation();
+    await sb.from('portfolio').delete().eq('id', id);
+    await loadPortfolio();
+  };
 
-      // Cover upload
-      const coverInput = Object.assign(document.createElement('input'), { type:'file', accept:'image/*', style:'display:none' });
-      document.body.appendChild(coverInput);
-      document.getElementById('cover-area').addEventListener('click', () => coverInput.click());
-      coverInput.addEventListener('change', async () => {
-        const file = coverInput.files[0]; if (!file) return;
-        if (file.size > 5*1024*1024) { toast('Фото слишком большое (макс. 5 МБ)'); return; }
-        toast('Загружаем…');
-        const url = await uploadFile('avatars', `${profile.id}/cover`, file);
-        if (!url) return;
-        await sb.from('masters').update({ cover_url: url }).eq('id', profile.id);
-        _master.cover_url = url; renderCover();
-        toast('Обложка обновлена', { icon:'✓' });
-      });
+  await loadPortfolio();
 
-      // Save form
-      document.getElementById('profile-form').addEventListener('submit', async e => {
-        e.preventDefault();
-        const name        = document.getElementById('f-name').value.trim();
-        const phone       = document.getElementById('f-phone').value.trim();
-        const city        = document.getElementById('f-city').value.trim();
-        const specialty   = document.querySelector('#spec-chips .chip.active')?.dataset.val || _master.specialty || '';
-        const username    = document.getElementById('f-username').value.trim().toLowerCase();
-        const description = document.getElementById('f-desc').value.trim();
-        const accepts     = document.getElementById('f-online').checked;
-        if (username && !/^[a-z0-9_]{3,20}$/.test(username)) { toast('Username: 3–20 символов, латиница/цифры'); return; }
-        const [r1, r2] = await Promise.all([
-          sb.from('profiles').update({ name }).eq('id', profile.id),
-          sb.from('masters').update({ specialty, description, accepts_online: accepts, phone, city, ...(username ? { username } : {}) }).eq('id', profile.id),
-        ]);
-        if (r1.error || r2.error) { toast('Ошибка сохранения'); return; }
-        document.getElementById('display-name').textContent = name || 'Без имени';
-        toast('Профиль сохранён', { icon:'✓' });
-        setTimeout(() => window.location.href = '/master', 600);
-      });
+  // Services
+  async function loadServices() {
+    const { data: services = [] } = await sb.from('services')
+      .select('*').eq('master_id', _profile.id).order('price');
+    const list = document.getElementById('services-list');
+    if (!services.length) {
+      list.innerHTML = `<div class="empty" style="padding:30px 0;"><h4>Нет услуг</h4><p>Добавьте в разделе Услуги</p></div>`;
+      return;
+    }
+    list.innerHTML = services.map(s => `
+      <div class="svc-card" style="cursor:default;">
+        ${s.image_url
+          ? `<div class="svc-thumb"><img src="${s.image_url}" alt="${s.name}" loading="lazy"/></div>`
+          : `<div class="svc-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;color:rgba(255,255,255,.3);"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`}
+        <div class="svc-info">
+          <div class="svc-name">${s.name}</div>
+          <div class="svc-meta">${s.duration} мин</div>
+        </div>
+        <div class="svc-price">${fmt$(s.price)}</div>
+      </div>`).join('');
+  }
 
-      // Portfolio
-      const portfolioInput = Object.assign(document.createElement('input'), { type:'file', accept:'image/*', style:'display:none' });
-      document.body.appendChild(portfolioInput);
+  renderMasterTabBar('profile');
+})();
 
-      async function renderPortfolio() {
-        const { data: photos = [] } = await sb.from('portfolio').select('*').eq('master_id', profile.id).order('created_at', { ascending: false });
-        document.getElementById('portfolio-count').textContent = `${photos.length} фото`;
-        const grid = document.getElementById('portfolio-grid');
-        grid.innerHTML = photos.map(p => `
-          <div class="portfolio-item">
-            <img src="${p.url}" alt="" />
-            <button class="portfolio-del" data-id="${p.id}">×</button>
-          </div>`).join('') + (photos.length < 12 ? `<div class="portfolio-add" id="port-add">+</div>` : '');
-        grid.querySelectorAll('.portfolio-del').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            await sb.from('portfolio').delete().eq('id', btn.dataset.id);
-            renderPortfolio();
-          });
-        });
-        document.getElementById('port-add')?.addEventListener('click', () => portfolioInput.click());
-      }
-      portfolioInput.addEventListener('change', async () => {
-        const file = portfolioInput.files[0]; if (!file) return;
-        toast('Загружаем…');
-        const url = await uploadFile('portfolio', `${profile.id}/${Date.now()}`, file);
-        if (!url) return;
-        await sb.from('portfolio').insert({ master_id: profile.id, url });
-        portfolioInput.value = '';
-        renderPortfolio(); toast('Фото добавлено', { icon:'✓' });
-      });
-      renderPortfolio();
-
-      // Team
-      async function renderTeam() {
-        const { data: team = [] } = await sb.from('team_members').select('*').eq('owner_id', profile.id).order('created_at');
-        document.getElementById('team-count').textContent = `${team.length} мастеров`;
-        const list = document.getElementById('team-list');
-        list.innerHTML = team.map((m,i) => `
-          <div class="team-card" data-id="${m.id}">
-            <div class="mini-avatar gradient">${(m.name||'?').charAt(0).toUpperCase()}</div>
-            <div class="meta"><div class="title">${m.name||'Без имени'}</div><div class="sub">${m.role||'Мастер'}</div></div>
-            <div class="muted">›</div>
-          </div>`).join('');
-        list.querySelectorAll('.team-card').forEach(card => {
-          const member = team.find(m => m.id === card.dataset.id);
-          card.addEventListener('click', () => openTeamForm(member));
-        });
-      }
-
-      function openTeamForm(member = null) {
-        const isNew = !member;
-        openSheet(`
-          <h3>${isNew ? 'Новый мастер' : 'Редактировать'}</h3>
-          <div class="field"><label>Имя</label><input id="tm-name" type="text" placeholder="Елена" value="${member?.name||''}" /></div>
-          <div class="field"><label>Специализация</label><input id="tm-role" type="text" placeholder="Маникюр" value="${member?.role||''}" /></div>
-          <div class="btn-row mt-12">
-            <button class="btn btn-secondary" onclick="closeSheet()">Отмена</button>
-            <button class="btn btn-primary" id="tm-save">Сохранить</button>
-          </div>
-          ${!isNew ? `<button class="btn btn-danger mt-12" id="tm-del">Удалить</button>` : ''}
-        `);
-        document.getElementById('tm-save').addEventListener('click', async () => {
-          const name = document.getElementById('tm-name').value.trim();
-          const role = document.getElementById('tm-role').value.trim();
-          if (!name) { toast('Укажите имя'); return; }
-          if (isNew) await sb.from('team_members').insert({ owner_id: profile.id, name, role });
-          else await sb.from('team_members').update({ name, role }).eq('id', member.id);
-          closeSheet(); renderTeam(); toast(isNew ? 'Мастер добавлен' : 'Сохранено', { icon:'✓' });
-        });
-        document.getElementById('tm-del')?.addEventListener('click', async () => {
-          await sb.from('team_members').delete().eq('id', member.id);
-          closeSheet(); renderTeam(); toast('Мастер удалён');
-        });
-      }
-      document.getElementById('team-add-btn').addEventListener('click', () => openTeamForm());
-      renderTeam();
-
-      document.getElementById('logout-btn').addEventListener('click', signOut);
-      renderMasterTabBar('profile');
-    })();
-  </script>
+// Lightbox
+function openLightbox(url) {
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lightbox-img').src = url;
+  lb.hidden = false; lb.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  const lb = document.getElementById('lightbox');
+  lb.hidden = true; lb.style.display = 'none';
+  document.body.style.overflow = '';
+}
+document.getElementById('lightbox').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeLightbox();
+});
+</script>
 </body>
 </html>

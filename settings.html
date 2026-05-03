@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"/>
+  <meta name="theme-color" content="#0A0A0A"/>
+  <title>BookMe · Настройки</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <a class="icon-btn-circle" href="javascript:history.back()" aria-label="Назад" style="display:inline-flex;align-items:center;justify-content:center;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </a>
+    <h1>Настройки</h1>
+    <span class="right-spacer"></span>
+  </header>
+
+  <!-- Profile summary card -->
+  <div style="padding:16px 20px 4px;">
+    <div class="settings-profile-card" id="profile-card" onclick="location.href='/profile-edit'">
+      <div class="mini-avatar gradient" id="s-avatar" style="width:56px;height:56px;font-size:22px;flex-shrink:0;background-size:cover;background-position:center;"></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:17px;font-weight:700;letter-spacing:-0.01em;" id="s-name">—</div>
+        <div style="font-size:13px;color:var(--text-2);" id="s-role">—</div>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-3);"><path d="m9 18 6-6-6-6"/></svg>
+    </div>
+  </div>
+
+  <!-- Settings groups -->
+  <div style="padding:0 20px;">
+
+    <!-- Account -->
+    <p class="settings-group-label">Аккаунт</p>
+    <div class="settings-group">
+      <a class="settings-row" href="/profile-edit">
+        <div class="settings-icon" style="background:#5B21B6;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </div>
+        <div class="settings-label">Редактировать профиль</div>
+        <svg class="settings-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </a>
+      <div class="settings-divider"></div>
+      <div class="settings-row" id="change-pwd-btn">
+        <div class="settings-icon" style="background:#1D4ED8;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div class="settings-label">Изменить пароль</div>
+        <svg class="settings-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </div>
+    </div>
+
+    <!-- Privacy & Security -->
+    <p class="settings-group-label">Безопасность</p>
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-icon" style="background:#059669;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="settings-label">Face ID / Touch ID</div>
+        <label class="switch" style="flex-shrink:0;">
+          <input type="checkbox" id="faceid-toggle"/>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="settings-divider"></div>
+      <div class="settings-row" onclick="showPrivacySheet()">
+        <div class="settings-icon" style="background:#0E7490;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93 19.07 19.07"/></svg>
+        </div>
+        <div class="settings-label">Конфиденциальность</div>
+        <svg class="settings-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <p class="settings-group-label">Уведомления</p>
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-icon" style="background:#D97706;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <div class="settings-label">Push‑уведомления</div>
+        <label class="switch" style="flex-shrink:0;">
+          <input type="checkbox" id="push-toggle" checked/>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="settings-divider"></div>
+      <div class="settings-row">
+        <div class="settings-icon" style="background:#B45309;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+        </div>
+        <div class="settings-label">Напоминания о записях</div>
+        <label class="switch" style="flex-shrink:0;">
+          <input type="checkbox" id="reminder-toggle" checked/>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Appearance -->
+    <p class="settings-group-label">Внешний вид</p>
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-icon" style="background:#1E293B;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </div>
+        <div class="settings-label" id="lang-label">Язык интерфейса</div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          <button class="lang-btn" id="lang-ru" onclick="setLang('ru')">RU</button>
+          <button class="lang-btn" id="lang-en" onclick="setLang('en')">EN</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Support -->
+    <p class="settings-group-label">Поддержка</p>
+    <div class="settings-group">
+      <div class="settings-row" onclick="openSheet('<h3>Поддержка</h3><p class=muted style=font-size:14px;margin:0>По всем вопросам пишите нам:</p><a href=mailto:support@bookme-app.online class=btn btn-primary style=margin-top:14px;display:flex>support@bookme-app.online</a><button class=btn btn-secondary style=margin-top:10px onclick=closeSheet()>Закрыть</button>')">
+        <div class="settings-icon" style="background:#7C3AED;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div class="settings-label">Помощь и поддержка</div>
+        <svg class="settings-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </div>
+      <div class="settings-divider"></div>
+      <div class="settings-row" onclick="showAbout()">
+        <div class="settings-icon" style="background:#374151;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="settings-label">О приложении</div>
+        <svg class="settings-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </div>
+    </div>
+
+    <!-- Danger zone -->
+    <div style="margin-top:28px;margin-bottom:40px;">
+      <button class="btn btn-danger" id="logout-btn" style="font-size:15px;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Выйти из аккаунта
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.settings-profile-card {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  cursor: pointer;
+  transition: background .15s;
+  margin-bottom: 20px;
+}
+.settings-profile-card:active { background: var(--surface-2); }
+
+.settings-group-label {
+  font-size: 12px; font-weight: 600;
+  color: var(--text-2); text-transform: uppercase;
+  letter-spacing: .07em; margin: 0 4px 8px; padding: 0;
+}
+.settings-group {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.settings-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background .12s;
+  text-decoration: none; color: inherit;
+  min-height: 52px;
+}
+.settings-row:active { background: var(--surface-2); }
+.settings-icon {
+  width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.settings-label {
+  flex: 1; font-size: 15px; font-weight: 500;
+}
+.settings-chevron {
+  width: 16px; height: 16px; color: var(--text-3); flex-shrink: 0;
+}
+.settings-divider {
+  height: 1px; background: var(--border); margin-left: 62px;
+}
+.lang-btn {
+  padding: 6px 12px; border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2); color: var(--text-2);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all .15s;
+}
+.lang-btn.active {
+  background: var(--text); color: var(--bg);
+  border-color: var(--text);
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>
+(async () => {
+  const auth = await requireAuth();
+  if (!auth) return;
+  const { profile } = auth;
+
+  // Fill profile summary
+  document.getElementById('s-name').textContent = profile.name || 'Без имени';
+  document.getElementById('s-role').textContent =
+    profile.role === 'master' ? 'Мастер · ' + profile.email
+    : 'Клиент · ' + profile.email;
+  const av = document.getElementById('s-avatar');
+  if (profile.avatar_url) {
+    av.style.backgroundImage = `url(${profile.avatar_url})`;
+    av.textContent = '';
+  } else {
+    av.textContent = (profile.name||'?').charAt(0).toUpperCase();
+  }
+
+  // Face ID toggle
+  const faceToggle = document.getElementById('faceid-toggle');
+  faceToggle.checked = hasPasskey();
+  faceToggle.addEventListener('change', async () => {
+    if (faceToggle.checked) {
+      await registerPasskey(profile);
+    } else {
+      localStorage.removeItem('bm_passkey_id');
+      toast('Face ID отключён');
+    }
+  });
+
+  // Language
+  const lang = localStorage.getItem('bm_lang') || navigator.language.split('-')[0];
+  document.getElementById('lang-ru').classList.toggle('active', lang === 'ru');
+  document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+
+  // Change password
+  document.getElementById('change-pwd-btn').addEventListener('click', () => {
+    openSheet(`
+      <h3>Изменить пароль</h3>
+      <div class="field"><label>Новый пароль</label><input id="new-pwd" type="password" placeholder="Минимум 6 символов"/></div>
+      <div class="field"><label>Повторите пароль</label><input id="rep-pwd" type="password" placeholder="Повторите пароль"/></div>
+      <button class="btn btn-primary mt-12" id="save-pwd">Сохранить</button>
+      <button class="btn btn-secondary mt-8" onclick="closeSheet()">Отмена</button>
+    `);
+    document.getElementById('save-pwd').addEventListener('click', async () => {
+      const p1 = document.getElementById('new-pwd').value;
+      const p2 = document.getElementById('rep-pwd').value;
+      if (p1.length < 6) { toast('Пароль минимум 6 символов'); return; }
+      if (p1 !== p2)     { toast('Пароли не совпадают'); return; }
+      const { error } = await sb.auth.updateUser({ password: p1 });
+      if (error) { toast('Ошибка: ' + error.message); return; }
+      closeSheet(); toast('Пароль изменён', { icon:'✓' });
+    });
+  });
+
+  // Logout
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    openSheet(`
+      <h3>Выйти из аккаунта?</h3>
+      <p class="muted" style="font-size:14px;margin:0 0 20px;">Вы будете перенаправлены на экран входа</p>
+      <button class="btn btn-danger" id="confirm-logout">Выйти</button>
+      <button class="btn btn-secondary mt-8" onclick="closeSheet()">Отмена</button>
+    `);
+    document.getElementById('confirm-logout').addEventListener('click', signOut);
+  });
+
+  // Profile edit shortcut
+  document.getElementById('profile-card').onclick = () => {
+    location.href = profile.role === 'master' ? '/profile-edit' : '/profile';
+  };
+})();
+
+function setLang(l) {
+  localStorage.setItem('bm_lang', l);
+  document.getElementById('lang-ru').classList.toggle('active', l === 'ru');
+  document.getElementById('lang-en').classList.toggle('active', l === 'en');
+  toast('Язык изменён', { icon:'✓' });
+}
+
+function showAbout() {
+  openSheet(`
+    <div style="text-align:center;padding:8px 0 16px;">
+      <img src="logo.svg" style="width:64px;height:64px;border-radius:18px;margin-bottom:14px;"/>
+      <div style="font-size:22px;font-weight:800;letter-spacing:-0.03em;margin-bottom:4px;">BookMe</div>
+      <div style="font-size:14px;color:var(--text-2);">Версия 1.0.0</div>
+    </div>
+    <div class="card" style="padding:0;margin-bottom:14px;">
+      <a class="row-item clickable" href="https://bookme-app.online/privacy" target="_blank" style="text-decoration:none;color:inherit;">
+        <div class="meta"><div class="title" style="font-size:15px;">Политика конфиденциальности</div></div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </a>
+      <div style="border-top:1px solid var(--border);"></div>
+      <a class="row-item clickable" href="https://bookme-app.online/terms" target="_blank" style="text-decoration:none;color:inherit;">
+        <div class="meta"><div class="title" style="font-size:15px;">Условия использования</div></div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </a>
+    </div>
+    <button class="btn btn-secondary" onclick="closeSheet()">Закрыть</button>
+  `);
+}
+
+function showPrivacySheet() {
+  openSheet(`
+    <h3>Конфиденциальность</h3>
+    <div class="card" style="margin:14px 0;padding:0;">
+      <div class="row-item" style="border:none;box-shadow:none;background:transparent;">
+        <div class="meta"><div class="title" style="font-size:15px;">Принимаю записи онлайн</div><div class="sub">Клиенты могут записаться через ссылку</div></div>
+        <label class="switch"><input type="checkbox" id="priv-online" checked/><span class="slider"></span></label>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="priv-save">Сохранить</button>
+    <button class="btn btn-secondary mt-8" onclick="closeSheet()">Отмена</button>
+  `);
+}
+</script>
+</body>
+</html>
