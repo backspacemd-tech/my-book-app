@@ -137,19 +137,19 @@ body.page-exit .auth-wrap {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 20px 10px;
-  position: fixed;          /* never moves — even in PWA */
+  padding: 0 16px;
+  height: 48px;              /* fixed height — compact */
+  position: fixed;
   top: var(--safe-top);
   left: 0; right: 0;
   background: var(--bg);
   z-index: 20;
   border-bottom: 1px solid var(--border);
-  /* constrain to app width like .app */
   max-width: 480px;
   margin: 0 auto;
 }
-/* Push content below fixed topbar */
-.app { padding-top: 56px; }
+/* Push content below fixed topbar (body already handles safe-top) */
+.app { padding-top: 48px; }
 
 .topbar h1 {
   font-size: 17px;
@@ -176,7 +176,7 @@ body.page-exit .auth-wrap {
 
 /* ============= Hero (welcome) ============= */
 .hero {
-  padding: 18px 20px 4px;
+  padding: 12px 20px 4px;
 }
 .hero .greet {
   color: var(--text-2);
@@ -1459,8 +1459,8 @@ body.page-exit .auth-wrap {
 
 /* Trial banner */
 .trial-banner {
-  margin: 14px 20px 0;
-  padding: 12px 14px;
+  margin: 8px 20px 0;
+  padding: 10px 14px;
   background: linear-gradient(180deg, #0A0A0A, #2A1F25);
   color: white;
   border-radius: var(--r);

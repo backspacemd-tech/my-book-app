@@ -216,9 +216,14 @@ async function shareLink(url, title) {
 
 // ── Public URL helpers ───────────────────────────────────────
 function getPublicUrl(username) {
-  return `${window.location.origin}/${encodeURIComponent(username)}`;
+  const origin = location.hostname === 'localhost'
+    ? 'https://bookme-app.online'
+    : location.origin;
+  return `${origin}/p?u=${encodeURIComponent(username)}`;
 }
-function getPrettyUrl(username) { return `${window.location.origin}/${username}`; }
+function getPrettyUrl(username) {
+  return `bookme-app.online/${username}`;
+}
 
 function setupAppNavigation() {
   document.body.addEventListener('click', (event) => {
