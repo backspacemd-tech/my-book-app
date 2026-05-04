@@ -830,11 +830,18 @@ section{padding:100px 0;}
           <div style="font-size:14px;color:var(--text-2);">Ваша персональная страница записи</div>
           <div style="margin-top:24px;background:rgba(255,255,255,.05);border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,.08);">
             <div style="font-size:12px;color:var(--text-2);margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Услуги</div>
-            ${['Маникюр · $35 · 60 мин','Педикюр · $40 · 75 мин','Покрытие · $20 · 30 мин'].map(s=>`
             <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;">
-              <span style="color:rgba(255,255,255,.7);">${s.split('·')[0]}</span>
-              <span style="color:var(--purple-l);font-weight:600;">${s.split('·')[1]}</span>
-            </div>`).join('')}
+              <span style="color:rgba(255,255,255,.7);">Маникюр</span>
+              <span style="color:var(--purple-l);font-weight:600;">$35</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;">
+              <span style="color:rgba(255,255,255,.7);">Педикюр</span>
+              <span style="color:var(--purple-l);font-weight:600;">$40</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;">
+              <span style="color:rgba(255,255,255,.7);">Гель-покрытие</span>
+              <span style="color:var(--purple-l);font-weight:600;">$20</span>
+            </div>
             <button style="width:100%;margin-top:12px;padding:12px;background:var(--grad);border-radius:10px;color:white;font-weight:700;font-size:14px;">Записаться</button>
           </div>
         </div>
@@ -876,15 +883,26 @@ section{padding:100px 0;}
       </div>
       <div class="reveal" style="transition-delay:.2s;">
         <div style="display:flex;flex-direction:column;gap:12px;">
-          ${['Маникюр и педикюр','Окрашивание волос','Брови и ресницы','Массаж'].map((s,i)=>`
           <div style="display:flex;align-items:center;gap:14px;background:var(--bg-2);border:1px solid var(--border);border-radius:16px;padding:14px 18px;">
-            <div style="width:44px;height:44px;border-radius:12px;background:rgba(236,72,153,.12);border:1px solid rgba(236,72,153,.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${['💅','💇‍♀️','👁️','💆'][i]}</div>
-            <div style="flex:1;">
-              <div style="font-weight:600;font-size:15px;">${s}</div>
-              <div style="font-size:13px;color:var(--text-2);">12 мастеров рядом</div>
-            </div>
+            <div style="width:44px;height:44px;border-radius:12px;background:rgba(236,72,153,.12);border:1px solid rgba(236,72,153,.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">💅</div>
+            <div style="flex:1;"><div style="font-weight:600;font-size:15px;">Маникюр и педикюр</div><div style="font-size:13px;color:var(--text-2);">12 мастеров рядом</div></div>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-3);"><path d="m9 18 6-6-6-6"/></svg>
-          </div>`).join('')}
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;background:var(--bg-2);border:1px solid var(--border);border-radius:16px;padding:14px 18px;">
+            <div style="width:44px;height:44px;border-radius:12px;background:rgba(236,72,153,.12);border:1px solid rgba(236,72,153,.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">💇</div>
+            <div style="flex:1;"><div style="font-weight:600;font-size:15px;">Окрашивание волос</div><div style="font-size:13px;color:var(--text-2);">8 мастеров рядом</div></div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-3);"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;background:var(--bg-2);border:1px solid var(--border);border-radius:16px;padding:14px 18px;">
+            <div style="width:44px;height:44px;border-radius:12px;background:rgba(236,72,153,.12);border:1px solid rgba(236,72,153,.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">✂️</div>
+            <div style="flex:1;"><div style="font-weight:600;font-size:15px;">Брови и ресницы</div><div style="font-size:13px;color:var(--text-2);">15 мастеров рядом</div></div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-3);"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;background:var(--bg-2);border:1px solid var(--border);border-radius:16px;padding:14px 18px;">
+            <div style="width:44px;height:44px;border-radius:12px;background:rgba(236,72,153,.12);border:1px solid rgba(236,72,153,.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">💆</div>
+            <div style="flex:1;"><div style="font-weight:600;font-size:15px;">Массаж</div><div style="font-size:13px;color:var(--text-2);">6 мастеров рядом</div></div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-3);"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
         </div>
       </div>
     </div>
@@ -994,23 +1012,48 @@ section{padding:100px 0;}
       <h2 class="section-h">Частые вопросы</h2>
     </div>
     <div class="faq-list">
-      ${[
-        ['Как начать работу с BookMe?','Зарегистрируйтесь за 2 минуты, добавьте услуги и поделитесь своей ссылкой с клиентами. Всё готово!'],
-        ['Нужно ли устанавливать приложение?','BookMe работает в браузере как PWA. Клиенты могут записаться без установки приложения. Мастера могут добавить BookMe на экран телефона.'],
-        ['Как клиенты узнают о свободных слотах?','Клиенты открывают вашу личную страницу и видят только реально свободное время. Занятые слоты скрыты — никаких конфликтов.'],
-        ['Есть ли напоминания о записях?','Да! Оба — и мастер, и клиент — получают push-уведомления при создании записи и напоминание за 1 час до визита.'],
-        ['Можно ли отменить запись?','Клиент может отменить запись из приложения. Мастер получит уведомление об отмене мгновенно.'],
-        ['Безопасны ли мои данные?','Да. Мы используем Supabase с шифрованием и политиками безопасности уровня строк (RLS). Каждый видит только свои данные.'],
-      ].map(([q,a])=>`
       <div class="faq-item reveal">
         <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
-          <span>${q}</span>
-          <div class="faq-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-          </div>
+          <span>Как начать работу с BookMe?</span>
+          <div class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div>
         </div>
-        <div class="faq-a">${a}</div>
-      </div>`).join('')}
+        <div class="faq-a">Зарегистрируйтесь за 2 минуты, добавьте услуги и поделитесь своей ссылкой с клиентами. Всё готово!</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+          <span>Нужно ли устанавливать приложение?</span>
+          <div class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div>
+        </div>
+        <div class="faq-a">BookMe работает в браузере как PWA. Клиенты могут записаться без установки приложения. Мастера могут добавить BookMe на экран телефона.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+          <span>Как клиенты узнают о свободных слотах?</span>
+          <div class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div>
+        </div>
+        <div class="faq-a">Клиенты открывают вашу личную страницу и видят только реально свободное время. Занятые слоты скрыты — никаких конфликтов.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+          <span>Есть ли напоминания о записях?</span>
+          <div class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div>
+        </div>
+        <div class="faq-a">Да! Оба — и мастер, и клиент — получают push-уведомления при создании записи и напоминание за 1 час до визита.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+          <span>Можно ли отменить запись?</span>
+          <div class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div>
+        </div>
+        <div class="faq-a">Клиент может отменить запись из приложения. Мастер получит уведомление об отмене мгновенно.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+          <span>Безопасны ли мои данные?</span>
+          <div class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div>
+        </div>
+        <div class="faq-a">Да. Мы используем Supabase с шифрованием и политиками безопасности уровня строк (RLS). Каждый видит только свои данные.</div>
+      </div>
     </div>
   </div>
 </section>
