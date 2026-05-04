@@ -51,7 +51,7 @@
         <h3 class="section-title" style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin:0 4px 10px;font-weight:600;">Ваши данные</h3>
         <div class="card">
           <div class="field"><label for="c-name">Имя</label><input id="c-name" type="text" placeholder="Как к вам обращаться" autocomplete="name" /></div>
-          <div class="field"><label for="c-phone">Телефон</label><input id="c-phone" type="tel" placeholder="+7 (___) ___-__-__" autocomplete="tel" /></div>
+          <div class="field"><label for="c-phone">Телефон</label><input id="c-phone" type="tel" placeholder="+___ ___-___-____" autocomplete="tel" /></div>
           <div class="field" style="margin-bottom:0;"><label for="c-email">Email (необязательно)</label><input id="c-email" type="email" placeholder="для напоминания" autocomplete="email" /></div>
         </div>
       </section>
@@ -161,10 +161,32 @@
       }
       datesEl.firstChild.click();
 
-      // Phone — free format, just keep it clean
+      // Phone — free format with auto country prefix
       const phone = document.getElementById('c-phone');
+      const tzCountry = {
+        'Europe/Chisinau':'+373','Europe/Bucharest':'+40','Europe/Kyiv':'+380',
+        'Europe/Kiev':'+380','Europe/Minsk':'+375','Europe/Warsaw':'+48',
+        'Europe/Berlin':'+49','Europe/Vienna':'+43','Europe/Prague':'+420',
+        'Europe/Budapest':'+36','Europe/Sofia':'+359','Europe/Vilnius':'+370',
+        'Europe/Riga':'+371','Europe/Tallinn':'+372','Europe/Helsinki':'+358',
+        'Europe/Stockholm':'+46','Europe/Oslo':'+47','Europe/Copenhagen':'+45',
+        'Europe/Amsterdam':'+31','Europe/Brussels':'+32','Europe/Paris':'+33',
+        'Europe/Madrid':'+34','Europe/Lisbon':'+351','Europe/Rome':'+39',
+        'Europe/Zurich':'+41','Europe/London':'+44','Europe/Dublin':'+353',
+        'Europe/Athens':'+30','Europe/Istanbul':'+90','Asia/Dubai':'+971',
+        'Asia/Tbilisi':'+995','Asia/Baku':'+994','Asia/Yerevan':'+374',
+        'Asia/Almaty':'+7','Asia/Tashkent':'+998','Asia/Dushanbe':'+992',
+        'America/New_York':'+1','America/Chicago':'+1','America/Los_Angeles':'+1',
+        'America/Toronto':'+1','Asia/Tokyo':'+81','Asia/Seoul':'+82',
+        'Asia/Shanghai':'+86','Asia/Singapore':'+65','Asia/Kolkata':'+91',
+      };
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const prefix = tzCountry[tz] || '';
+      if (prefix && !phone.value) {
+        phone.value = prefix + ' ';
+        phone.placeholder = prefix + ' ___-___-____';
+      }
       phone.addEventListener('input', () => {
-        // Allow +, digits, spaces, dashes, parentheses only
         phone.value = phone.value.replace(/[^\d\s\+\-\(\)]/g, '');
       });
 

@@ -634,8 +634,11 @@ body.page-exit .auth-wrap {
   justify-content: center;
   pointer-events: none;
   padding-bottom: var(--safe-bottom);
-  /* fill the safe-area gap so no transparent strip shows in PWA */
   background: var(--bg);
+  /* Force GPU layer so iOS PWA doesn't scroll it away */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
 }
 .tabbar-inner {
   pointer-events: auto;
