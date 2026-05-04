@@ -1,5 +1,5 @@
-/* BookMe — service worker v9 */
-const CACHE = 'bookme-v9';
+/* BookMe — service worker v10 */
+const CACHE = 'bookme-v10';
 
 // Only static assets get cached — never HTML pages
 const STATIC = [
@@ -28,7 +28,7 @@ p{font-size:15px;color:#9CA3AF;line-height:1.5;max-width:300px;}
 button{margin-top:8px;background:#FAFAFA;color:#0A0A0A;border:none;border-radius:14px;
   padding:14px 28px;font-size:16px;font-weight:600;cursor:pointer;}
 </style></head><body>
-<div class="icon">🦋</div>
+<div class="icon"><svg width="36" height="36" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M490 99C510 99 526 110 526 146s-5 105-10 165c-18 68-60 103-113 120 46 12 78 32 87 52 13 27 5 59-27 93-34 36-61 45-81 43-21-2-38-11-52-25-14-14-24-31-32-46-7-14-13-27-16-36a600 600 0 0 1-3-10 600 600 0 0 1-3 10c-3 9-8 22-16 36-7 15-18 32-32 46-14 14-31 23-52 25-20 2-47-7-81-43-32-34-40-66-27-93 10-20 41-40 87-52C110 245 68 210 50 143 44 118 38 84 33 52 29 20 75 99 110 99c24 0 55 16 77 32 31 23 64 58 88 91 24-33 57-68 88-91 22-16 53-32 77-32z" fill="url(#g)"/><defs><linearGradient id="g" x1="300" y1="100" x2="300" y2="497" gradientUnits="userSpaceOnUse"><stop stop-color="#9B5DFF"/><stop offset="1" stop-color="#C9B2F0"/></linearGradient></defs></svg></div>
 <h1>Нет соединения</h1>
 <p>Проверьте интернет и попробуйте снова.</p>
 <button onclick="location.reload()">Повторить</button>

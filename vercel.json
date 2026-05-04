@@ -1,8 +1,7 @@
 {
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/",             "destination": "/landing.html" },
-    { "source": "/login",        "destination": "/index.html" },
+    { "source": "/login",        "destination": "/login.html" },
     { "source": "/dashboard",    "destination": "/dashboard.html" },
     { "source": "/master",       "destination": "/master.html" },
     { "source": "/client",       "destination": "/client.html" },

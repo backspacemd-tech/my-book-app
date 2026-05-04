@@ -6,7 +6,7 @@
 (function normalizeHtmlUrl() {
   const path = window.location.pathname;
   if (!path.endsWith('.html')) return;
-  const clean = path === '/index.html' ? '/' : path.replace(/\.html$/, '');
+  const clean = path === '/index.html' ? '/login' : path.replace(/\.html$/, '');
   const destination = clean + window.location.search + window.location.hash;
   if (destination !== window.location.href) {
     window.location.replace(destination);
@@ -121,7 +121,7 @@ function redirectByRole(role) {
 async function requireAuth(expectedRole = null) {
   let session;
   try { session = await getSession(); } catch { session = null; }
-  if (!session) { window.location.href = '/'; return null; }
+  if (!session) { window.location.href = '/login'; return null; }
 
   let profile;
   try {
@@ -131,9 +131,9 @@ async function requireAuth(expectedRole = null) {
     });
   } catch (e) {
     console.error('Profile load failed', e);
-    window.location.href = '/'; return null;
+    window.location.href = '/login'; return null;
   }
-  if (!profile) { window.location.href = '/'; return null; }
+  if (!profile) { window.location.href = '/login'; return null; }
 
   if (expectedRole && profile.role !== expectedRole && profile.role !== 'admin') {
     // Allow masters to enter client mode (to book services themselves)
@@ -166,7 +166,7 @@ async function navigateTo(url) {
 
 async function signOut() {
   await sb.auth.signOut();
-  await navigateTo('/');
+  await navigateTo('/login');
 }
 
 // ── Toast notifications ──────────────────────────────────────
@@ -264,7 +264,7 @@ function addAppBackButton() {
   back.addEventListener('click', (e) => {
     e.preventDefault();
     if (window.history.length > 1) window.history.back();
-    else window.location.href = '/';
+    else window.location.href = '/login';
   });
   topbar.insertBefore(back, topbar.firstChild);
 }
