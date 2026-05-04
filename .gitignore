@@ -1,7 +1,7 @@
 .DS_Store
+Herobg.mp4
 .claude/
 *.log
 *.tmp
 node_modules/
-.DS_Store
 *.swp
