@@ -1,14 +1,46 @@
 {
-  "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
     { "source": "/",             "destination": "/landing.html" },
     { "source": "/login",        "destination": "/index.html" },
-    { "source": "/inbox",        "destination": "/inbox.html" },
-    { "source": "/settings",     "destination": "/settings.html" },
+    { "source": "/dashboard",    "destination": "/dashboard.html" },
+    { "source": "/master",       "destination": "/master.html" },
+    { "source": "/client",       "destination": "/client.html" },
+    { "source": "/booking",      "destination": "/booking.html" },
+    { "source": "/bookings",     "destination": "/bookings.html" },
+    { "source": "/profile",      "destination": "/profile.html" },
     { "source": "/profile-edit", "destination": "/profile-edit.html" },
+    { "source": "/services",     "destination": "/services.html" },
     { "source": "/clients",      "destination": "/clients.html" },
-    { "source": "/messages",     "destination": "/messages.html" }
+    { "source": "/inbox",        "destination": "/inbox.html" },
+    { "source": "/messages",     "destination": "/messages.html" },
+    { "source": "/settings",     "destination": "/settings.html" },
+    { "source": "/analytics",    "destination": "/analytics.html" },
+    { "source": "/subscription", "destination": "/subscription.html" },
+    { "source": "/admin",        "destination": "/admin-login.html" },
+    { "source": "/admin-login",  "destination": "/admin-login.html" },
+    { "source": "/p",            "destination": "/p.html" },
+    { "source": "/chat",         "destination": "/chat.html" },
+    { "source": "/public",       "destination": "/public.html" },
+    { "source": "/offline",      "destination": "/offline.html" },
+    { "source": "/logo.svg",     "destination": "/logo.svg" },
+    { "source": "/sw.js",        "destination": "/sw.js" },
+    { "source": "/manifest.json","destination": "/manifest.json" },
+    { "source": "/app.js",       "destination": "/app.js" },
+    { "source": "/config.js",    "destination": "/config.js" },
+    { "source": "/styles.css",   "destination": "/styles.css" },
+    { "source": "/landing.html", "destination": "/landing.html" },
+    { "source": "/apple-touch-icon.png",     "destination": "/apple-touch-icon.png" },
+    { "source": "/apple-touch-icon-512.png", "destination": "/apple-touch-icon-512.png" },
+    { "source": "/.well-known/(.*)", "destination": "/.well-known/$1" },
+    { "source": "/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/(.*)\\.png",  "destination": "/$1.png" },
+    { "source": "/(.*)\\.svg",  "destination": "/$1.svg" },
+    { "source": "/(.*)\\.js",   "destination": "/$1.js" },
+    { "source": "/(.*)\\.css",  "destination": "/$1.css" },
+    { "source": "/(.*)\\.json", "destination": "/$1.json" },
+    { "source": "/(.*)\\.html", "destination": "/$1.html" },
+    { "source": "/:username",    "destination": "/p.html?u=:username" }
   ],
   "redirects": [
     {
@@ -22,16 +54,16 @@
     {
       "source": "/sw.js",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
-        { "key": "Service-Worker-Allowed", "value": "/" }
+        { "key": "Cache-Control",        "value": "public, max-age=0, must-revalidate" },
+        { "key": "Service-Worker-Allowed","value": "/" }
       ]
     },
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options",        "value": "SAMEORIGIN" },
-        { "key": "Referrer-Policy",        "value": "strict-origin-when-cross-origin" }
+        { "key": "X-Content-Type-Options","value": "nosniff" },
+        { "key": "X-Frame-Options",       "value": "SAMEORIGIN" },
+        { "key": "Referrer-Policy",       "value": "strict-origin-when-cross-origin" }
       ]
     }
   ]
