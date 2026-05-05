@@ -70,7 +70,7 @@ section{padding:100px 0;}
 .nav-links a:hover{color:#fff;transition:color .15s;}
 .nav-cta{display:flex;align-items:center;gap:10px;flex-shrink:0;}
 .btn-nav{
-  padding:8px 20px;border-radius:8px;
+  padding:8px 20px;border-radius:100px;
   border:1px solid rgba(255,255,255,.22);
   background:transparent;color:#fff;
   font-size:14px;font-weight:500;white-space:nowrap;
@@ -145,7 +145,7 @@ section{padding:100px 0;}
 }
 .mob-panel-btns a{
   text-align:center;padding:13px;
-  border:1px solid rgba(255,255,255,.18);border-radius:10px;
+  border:1px solid rgba(255,255,255,.18);border-radius:100px;
   font-size:14px;font-weight:600;color:rgba(255,255,255,.8);
   background:transparent;transition:background .15s;
 }
@@ -329,7 +329,7 @@ section{padding:100px 0;}
 }
 .price-card.popular .plan-features li{color:rgba(255,255,255,.8);}
 .price-card.popular .plan-features li::before{background:rgba(255,255,255,.15);color:#fff;}
-.plan-btn{width:100%;padding:14px;border-radius:12px;font-size:15px;font-weight:700;transition:all .2s var(--ease);}
+.plan-btn{width:100%;padding:14px;border-radius:100px;font-size:15px;font-weight:700;transition:all .2s var(--ease);}
 .plan-btn-outline{background:var(--surface);border:1px solid var(--border);color:var(--text);}
 .plan-btn-outline:hover{background:var(--surface-h);}
 .plan-btn-solid{background:var(--grad);color:#fff;box-shadow:0 4px 20px rgba(124,58,237,.4);}
@@ -383,6 +383,10 @@ section{padding:100px 0;}
 }
 .cta-section p{font-size:16px;font-weight:400;color:rgba(255,255,255,.6);margin-bottom:40px;}
 .cta-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+@media(max-width:600px){
+  .cta-btns{flex-direction:column;align-items:center;}
+  .cta-btns .btn-hero{width:100%;max-width:380px;text-align:center;justify-content:center;}
+}
 .cta-note{font-size:13px;color:rgba(255,255,255,.35);margin-top:16px;}
 .btn-hero{
   padding:15px 32px;border-radius:100px;
@@ -424,18 +428,27 @@ section{padding:100px 0;}
 .roles-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:56px;}
 @media(max-width:600px){.roles-grid{grid-template-columns:1fr;}}
 .role-card-big{
-  background:var(--bg-2);border:1px solid var(--border);
   border-radius:var(--r-xl);padding:36px;
   transition:all .3s var(--ease);position:relative;overflow:hidden;
 }
-.role-card-big::after{
-  content:"";position:absolute;bottom:-60px;right:-60px;
-  width:200px;height:200px;border-radius:50%;opacity:.06;transition:opacity .3s;
+.role-card-big.master{
+  background:linear-gradient(145deg,#0D0D1A 60%,#111026 100%);
+  border:1px solid rgba(124,58,237,.2);
 }
-.role-card-big.master::after{background:var(--purple);}
-.role-card-big.client::after{background:var(--pink);}
-.role-card-big:hover{border-color:var(--border-h);transform:translateY(-4px);}
-.role-card-big:hover::after{opacity:.12;}
+.role-card-big.client{
+  background:linear-gradient(145deg,#0D0D1A 60%,#140D1A 100%);
+  border:1px solid rgba(236,72,153,.15);
+}
+/* top accent line */
+.role-card-big::after{
+  content:"";position:absolute;top:0;left:0;right:0;height:2px;
+  pointer-events:none;border-radius:var(--r-xl) var(--r-xl) 0 0;
+}
+.role-card-big.master::after{background:linear-gradient(90deg,transparent 0%,rgba(124,58,237,.7) 40%,rgba(155,93,255,.7) 60%,transparent 100%);}
+.role-card-big.client::after{background:linear-gradient(90deg,transparent 0%,rgba(236,72,153,.6) 40%,rgba(245,100,170,.6) 60%,transparent 100%);}
+.role-card-big:hover{transform:translateY(-4px);}
+.role-card-big.master:hover{border-color:rgba(124,58,237,.45);box-shadow:0 0 48px rgba(124,58,237,.1);}
+.role-card-big.client:hover{border-color:rgba(236,72,153,.35);box-shadow:0 0 48px rgba(236,72,153,.08);}
 .role-emoji{display:flex;align-items:center;margin-bottom:20px;}
 .role-card-big h3{font-size:24px;font-weight:800;letter-spacing:-.03em;margin-bottom:12px;}
 .role-card-big p{font-size:15px;color:var(--text-2);line-height:1.65;margin-bottom:28px;}
@@ -446,7 +459,7 @@ section{padding:100px 0;}
 .role-card-big.client .feat-item::before{background:var(--pink);}
 .role-btn{
   display:inline-flex;align-items:center;gap:8px;
-  padding:13px 24px;border-radius:12px;font-size:14px;font-weight:700;transition:all .2s var(--ease);
+  padding:13px 24px;border-radius:100px;font-size:14px;font-weight:700;transition:all .2s var(--ease);
 }
 .role-btn-master{background:rgba(124,58,237,.15);color:var(--purple-l);border:1px solid rgba(124,58,237,.25);}
 .role-btn-master:hover{background:rgba(124,58,237,.25);}
@@ -700,7 +713,9 @@ section{padding:100px 0;}
       </div>
       <div class="reveal two-col-visual" style="transition-delay:.2s;background:linear-gradient(135deg,#0D0D1A,#1A0A3D);">
         <div style="text-align:center;padding:32px;width:100%;">
-          <div style="font-size:48px;margin-bottom:12px;">✂️</div>
+          <div style="margin-bottom:12px;display:flex;justify-content:center;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--purple-l)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="7.76" y1="13.08" x2="13.33" y2="7.51"/></svg>
+          </div>
           <div style="font-size:16px;font-weight:700;margin-bottom:6px;">bookme-app.online/<span style="color:var(--purple-l);">anna</span></div>
           <div style="font-size:13px;color:var(--text-2);margin-bottom:20px;">Ваша персональная страница записи</div>
           <div style="background:rgba(255,255,255,.05);border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,.08);">
@@ -848,7 +863,13 @@ section{padding:100px 0;}
         <a href="/login#reg" class="btn-hero btn-hero-primary">Зарегистрироваться бесплатно →</a>
         <a href="/login" class="btn-hero btn-hero-secondary">Уже есть аккаунт</a>
       </div>
-      <p class="cta-note">✓ 30 дней бесплатно &nbsp;&nbsp;✓ Без карты &nbsp;&nbsp;✓ Отмена в любое время</p>
+      <p class="cta-note">
+        <span style="display:inline-flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>30 дней бесплатно</span>
+        &nbsp;&nbsp;
+        <span style="display:inline-flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Без карты</span>
+        &nbsp;&nbsp;
+        <span style="display:inline-flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Отмена в любое время</span>
+      </p>
     </div>
   </div>
 </section>
@@ -969,14 +990,14 @@ document.querySelectorAll('video[autoplay]').forEach(v => {
   const banner = document.getElementById('pwa-banner');
   const howto  = document.getElementById('pwa-howto');
 
-  /* "Не сейчас" / × — скрыть до следующего визита */
   function dismissTemp() {
     banner.classList.remove('show');
+    document.body.style.paddingBottom = '';
     sessionStorage.setItem('bm_pwa_skip','1');
   }
-  /* "Понятно" — скрыть навсегда */
   function dismissPermanent() {
     howto.hidden = true;
+    document.body.style.paddingBottom = '';
     localStorage.setItem('bm_pwa_ok','1');
   }
   function showHowto() {
@@ -984,7 +1005,12 @@ document.querySelectorAll('video[autoplay]').forEach(v => {
     howto.hidden = false;
   }
 
-  setTimeout(() => { if(isMobile()) banner.classList.add('show'); }, 1800);
+  setTimeout(() => {
+    if(isMobile()) {
+      banner.classList.add('show');
+      document.body.style.paddingBottom = banner.offsetHeight + 'px';
+    }
+  }, 1800);
 
   document.getElementById('pwa-x').onclick     = dismissTemp;
   document.getElementById('pwa-later').onclick  = dismissTemp;
