@@ -115,21 +115,20 @@ body {
 }
 
 .app, .public, .auth-wrap {
-  transition: opacity .18s var(--ease), transform .18s var(--ease);
-  will-change: opacity, transform;
+  transition: opacity .18s var(--ease);
+  will-change: opacity;
 }
 body.page-exit .app,
 body.page-exit .public,
 body.page-exit .auth-wrap {
   opacity: 0;
-  transform: translateY(8px);
 }
 
 .app.no-nav { padding-bottom: calc(32px + var(--safe-bottom)); }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 /* ============= Topbar ============= */

@@ -104,6 +104,7 @@ let _profile, _master;
   const auth = await requireAuth('master');
   if (!auth) return;
   _profile = auth.profile;
+  renderMasterTabBar('profile'); // immediately — don't wait for data
 
   const { data: master } = await sb.from('masters').select('*').eq('id', _profile.id).single();
   _master = master || {};

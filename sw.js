@@ -1,5 +1,5 @@
-/* BookMe — service worker v12 */
-const CACHE = 'bookme-v12';
+/* BookMe — service worker v13 */
+const CACHE = 'bookme-v13';
 
 // Only static assets get cached — never HTML pages
 const STATIC = [
@@ -92,8 +92,19 @@ self.addEventListener('fetch', e => {
   // ── Never intercept these ──────────────────────────────────
   // Supabase API
   if (url.hostname.includes('supabase.co')) return;
-  // CDN (Supabase JS, etc.)
-  if (url.hostname.includes('jsdelivr.net')) return;
+  // CDN assets (Supabase JS etc.) — cache-first so they load instantly after first visit
+  if (url.hostname.includes('jsdelivr.net')) {
+    e.respondWith(
+      caches.match(e.request).then(cached => {
+        if (cached) return cached;
+        return fetch(e.request).then(res => {
+          if (res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+          return res;
+        }).catch(() => Response.error());
+      })
+    );
+    return;
+  }
   // Google OAuth & external auth domains
   if (url.hostname.includes('google') || url.hostname.includes('accounts.')) return;
   // Any URL with query params (OAuth callbacks: ?code=, ?error=, ?token= etc.)

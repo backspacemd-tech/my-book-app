@@ -62,12 +62,13 @@
 let _masterId, _allClients = [], _sort = 'last', _query = '';
 
 async function load() {
-  // Get unique clients from bookings with aggregate data
+  // Limit to last 500 bookings to prevent loading entire history
   const { data: bookings = [] } = await sb.from('bookings')
     .select('client_id, client_name, client_phone, date_iso, service_name, service_price, status')
     .eq('master_id', _masterId)
     .not('client_id', 'is', null)
-    .order('date_iso', { ascending: false });
+    .order('date_iso', { ascending: false })
+    .limit(500);
 
   // Group by client_id
   const map = new Map();
@@ -200,9 +201,13 @@ function plural(n, one, few, many) {
   _masterId = auth.profile.id;
   renderMasterTabBar('clients'); // immediately — don't wait for data
 
-  document.getElementById('search').addEventListener('input', e => {
+  // Show skeleton immediately so there's never a blank screen
+  document.getElementById('clients-list').innerHTML = skCards(5);
+
+  document.getElementById('search').addEventListener('input', debounce(e => {
     _query = e.target.value; render();
-  });
+  }, 250));
+
   document.querySelectorAll('.tab[data-sort]').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab[data-sort]').forEach(t => t.classList.remove('active'));

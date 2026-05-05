@@ -363,6 +363,7 @@
     (async () => {
       auth = await requireAuth('master');
       if (!auth) return;
+      renderMasterTabBar('profile'); // immediately — don't wait for data
       const { data } = await sb.from('masters').select('*').eq('id', auth.profile.id).single();
       master = data || { plan: 'trial', next_billing: null, trial_ends: null };
       info = getPlanInfo(master);

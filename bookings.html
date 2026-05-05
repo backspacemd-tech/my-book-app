@@ -41,7 +41,7 @@
     let _allBookings = [], _masterId;
 
     async function load() {
-      const { data } = await sb.from('bookings').select('*').eq('master_id', _masterId).order('date_iso', { ascending: false });
+      const { data } = await sb.from('bookings').select('*').eq('master_id', _masterId).order('date_iso', { ascending: false }).limit(500);
       _allBookings = data || [];
       const upcoming = bookingsByDate(_allBookings, 'upcoming').length;
       const today    = bookingsByDate(_allBookings, 'today').length;
@@ -118,9 +118,13 @@
           render(tab.dataset.filter);
         });
       });
+      // Show skeleton immediately so there's never a blank screen
+      document.getElementById('list').innerHTML = skCards(5);
+
       await load();
-      // Realtime
-      sb.channel('bookings-list').on('postgres_changes', { event:'*', schema:'public', table:'bookings', filter:`master_id=eq.${_masterId}` }, load).subscribe();
+      // Realtime — debounced to avoid rapid re-renders from burst updates
+      const _reloadDebounced = debounce(load, 500);
+      sb.channel('bookings-list').on('postgres_changes', { event:'*', schema:'public', table:'bookings', filter:`master_id=eq.${_masterId}` }, _reloadDebounced).subscribe();
     })();
   </script>
 </body>

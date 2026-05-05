@@ -138,6 +138,7 @@
       const auth = await requireAuth('master');
       if (!auth) return;
       _masterId = auth.profile.id;
+      renderMasterTabBar('home'); // immediately — don't wait for data
 
       // Load master expenses
       const { data: master } = await sb.from('masters').select('expenses').eq('id', _masterId).single();

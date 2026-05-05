@@ -423,10 +423,23 @@ function _renderTabBar(tabs, activeKey, badgeMap) {
 // This guarantees the nav is ALWAYS visible before any async auth/data.
 document.addEventListener('DOMContentLoaded', () => {
   const p = location.pathname;
-  const masterPages = { '/master':'home', '/bookings':'bookings', '/clients':'clients', '/profile':'profile', '/services':'services', '/analytics':'home' };
-  const clientPages = { '/client':'home' };
+  const masterPages = {
+    '/master':       'home',
+    '/bookings':     'bookings',
+    '/clients':      'clients',
+    '/profile':      'profile',
+    '/profile-edit': 'profile',
+    '/services':     'home',
+    '/analytics':    'home',
+    '/chat':         'home',
+    '/subscription': 'profile',
+    '/settings':     'profile',
+  };
+  const clientPages = { '/client': 'home' };
+  const adminPages  = { '/admin': 'home' };
   if (masterPages[p] !== undefined) renderMasterTabBar(masterPages[p]);
   else if (clientPages[p] !== undefined) renderClientTabBar(clientPages[p]);
+  else if (adminPages[p]  !== undefined) renderAdminTabBar(adminPages[p]);
 });
 
 // ── Stats calculation (from Supabase bookings array) ─────────
@@ -620,6 +633,12 @@ function fadeSection(el, delay = 0) {
   el.style.transform = 'translateY(0)';
 }
 
+// ── Debounce ─────────────────────────────────────────────────
+function debounce(fn, ms = 300) {
+  let timer;
+  return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), ms); };
+}
+
 // ── In-memory cache with TTL ──────────────────────────────────
 const _cache = new Map();
 function getCached(key, fetcher, ttl = 30_000) {
@@ -628,6 +647,32 @@ function getCached(key, fetcher, ttl = 30_000) {
   return fetcher().then(data => { _cache.set(key, { data, ts: Date.now() }); return data; });
 }
 function invalidateCache(...keys) { keys.forEach(k => _cache.delete(k)); }
+
+// ── localStorage cache (survives page navigation) ─────────────
+// ttl default: 5 minutes. Max stored keys: avoid filling localStorage.
+function getCachedLocal(key, fetcher, ttl = 5 * 60_000) {
+  const lsKey = 'bm_' + key;
+  try {
+    const raw = localStorage.getItem(lsKey);
+    if (raw) {
+      const { data, ts } = JSON.parse(raw);
+      if (Date.now() - ts < ttl) {
+        // Stale-while-revalidate: return cache immediately, refresh in background
+        fetcher().then(fresh => {
+          try { localStorage.setItem(lsKey, JSON.stringify({ data: fresh, ts: Date.now() })); } catch {}
+        }).catch(() => {});
+        return Promise.resolve(data);
+      }
+    }
+  } catch {}
+  return fetcher().then(data => {
+    try { localStorage.setItem(lsKey, JSON.stringify({ data, ts: Date.now() })); } catch {}
+    return data;
+  });
+}
+function invalidateCachedLocal(...keys) {
+  keys.forEach(k => { try { localStorage.removeItem('bm_' + k); } catch {} });
+}
 
 // ── Skeleton helpers ──────────────────────────────────────────
 function skCard(lines = 2) {

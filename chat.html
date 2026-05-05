@@ -181,6 +181,7 @@ ${_services.slice(0,10).map(s=>`${s.name}: $${s.price||0}, ${s.duration||30} м�
       const auth = await requireAuth('master');
       if (!auth) return;
       _profile = auth.profile;
+      renderMasterTabBar('home'); // immediately — don't wait for data
 
       const [{ data: master }, { data: bookings }, { data: services }] = await Promise.all([
         sb.from('masters').select('*').eq('id', _profile.id).single(),

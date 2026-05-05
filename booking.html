@@ -223,6 +223,8 @@
           .eq('date_iso', selectedDate.iso).eq('time', selectedTime)
           .neq('status', 'cancelled').maybeSingle();
         if (taken) {
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = 'Подтвердить запись';
           toast('Это время только что заняли. Выберите другое.');
           await renderTimes(); return;
         }

@@ -231,6 +231,9 @@
   const auth = await requireAuth();
   if (!auth) return;
   const { profile } = auth;
+  // Render the correct tabbar based on role — immediately, before any data loads
+  if (profile.role === 'master' || profile.role === 'admin') renderMasterTabBar('profile');
+  else renderClientTabBar('profile');
 
   // Fill profile summary
   document.getElementById('s-name').textContent = profile.name || 'Без имени';
