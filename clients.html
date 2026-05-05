@@ -198,7 +198,6 @@ function plural(n, one, few, many) {
   const auth = await requireAuth('master');
   if (!auth) return;
   _masterId = auth.profile.id;
-  renderNav('master', 'clients');
 
   document.getElementById('search').addEventListener('input', e => {
     _query = e.target.value; render();
