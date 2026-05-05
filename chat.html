@@ -16,36 +16,30 @@
 <body>
   <div class="app no-nav" style="display:flex;flex-direction:column;height:100dvh;padding-bottom:0;">
     <header class="topbar" style="flex-shrink:0;">
-      <a class="icon-btn-circle" href="/master" aria-label="Назад">←</a>
+      <a class="icon-btn-circle" href="/master" aria-label="Назад" style="display:inline-flex;align-items:center;justify-content:center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </a>
       <h1>ИИ-ассистент</h1>
-      <button class="icon-btn-circle" id="clear-btn" title="Очистить" aria-label="Очистить">⌫</button>
+      <button class="icon-btn-circle" id="clear-btn" title="Очистить" aria-label="Очистить" style="display:inline-flex;align-items:center;justify-content:center;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      </button>
     </header>
 
-    <!-- Pro gate -->
-    <div id="pro-gate" class="chat-wrap" hidden>
-      <div class="pro-gate">
-        <div class="pro-gate-icon">✦</div>
-        <h3>ИИ-ассистент — Pro</h3>
-        <p>Анализ записей, советы по бизнесу, ответы на вопросы о вашем прайсе и клиентах. Доступно с тарифом Pro или Studio.</p>
-        <a class="btn btn-primary" href="/subscription" style="max-width:280px;">Обновить до Pro — $12/мес</a>
-        <div style="height:12px;"></div>
-        <a class="btn btn-secondary" href="/master" style="max-width:280px;">На главную</a>
-      </div>
-    </div>
-
-    <!-- Chat UI -->
-    <div id="chat-ui" class="chat-wrap" hidden>
+    <div id="chat-ui" class="chat-wrap">
       <div class="chat-suggestions" id="suggestions">
-        <div class="chat-suggestion-chip">Сколько записей на неделе?</div>
-        <div class="chat-suggestion-chip">Совет по бизнесу</div>
+        <div class="chat-suggestion-chip">Кто сегодня записан?</div>
         <div class="chat-suggestion-chip">Выручка за 7 дней</div>
+        <div class="chat-suggestion-chip">Напомни завтрашнему клиенту</div>
+        <div class="chat-suggestion-chip">Идеи для поста</div>
         <div class="chat-suggestion-chip">Топ-услуга</div>
-        <div class="chat-suggestion-chip">Мой тариф</div>
+        <div class="chat-suggestion-chip">Совет по ценам</div>
       </div>
       <div class="chat-messages" id="messages"></div>
       <div class="chat-input-bar">
         <textarea id="chat-input" rows="1" placeholder="Напишите вопрос…"></textarea>
-        <button class="chat-send-btn" id="send-btn" disabled>↑</button>
+        <button class="chat-send-btn" id="send-btn" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+        </button>
       </div>
     </div>
   </div>
@@ -54,29 +48,150 @@
   <script src="config.js"></script>
   <script src="app.js"></script>
   <script>
-    const CHAT_KEY = 'bookme_chat';
-    let _profile, _bookings = [], _services = [];
+    const GEMINI_KEY = 'AIzaSyCjjgh9f6Pf_v2q_dWncitWYUwm5ff5hOs';
+    const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
+    const CHAT_KEY = 'bookme_chat_v3';
+    let _profile, _bookings = [], _services = [], _master = null;
+
+    /* ── mini markdown renderer ── */
+    function md(text) {
+      return text
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g,'<em>$1</em>')
+        .replace(/`([^`]+)`/g,'<code style="background:rgba(255,255,255,.08);padding:1px 5px;border-radius:4px;">$1</code>')
+        .replace(/^#{1,3}\s(.+)$/gm,'<strong>$1</strong>')
+        .replace(/^[-•]\s(.+)$/gm,'<span style="display:block;padding-left:14px;position:relative;"><span style="position:absolute;left:0;">•</span>$1</span>')
+        .replace(/\n/g,'<br>');
+    }
+
+    function nowTime() { return new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}); }
+    function todayISO() { return new Date().toISOString().slice(0,10); }
+
+    function buildSystemPrompt() {
+      const today = todayISO();
+      const todayB = _bookings
+        .filter(b => b.date_iso === today)
+        .sort((a,b) => (a.time_slot||'').localeCompare(b.time_slot||''));
+
+      const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+      const tomorrowISO = tomorrow.toISOString().slice(0,10);
+      const tomorrowB = _bookings.filter(b => b.date_iso === tomorrowISO);
+
+      const weekRevenue = _bookings
+        .filter(b => {
+          const d = new Date(b.date_iso); const now = new Date();
+          return (now-d) <= 7*86400000 && b.status !== 'cancelled';
+        })
+        .reduce((s,b) => s+(b.service_price||0), 0);
+
+      const serviceTop = _services.sort((a,b) => (b.booking_count||0)-(a.booking_count||0))[0];
+
+      return `Ты — персональный ИИ-ассистент мастера в приложении BookMe. Общайся на русском языке, дружелюбно и по делу.
+
+═══ ДАННЫЕ МАСТЕРА ═══
+Имя: ${_profile.name || 'Мастер'}
+Специализация: ${_profile.specialty || 'не указана'}
+Тариф: ${_master?.plan || 'free'}
+Сегодня: ${today}
+
+═══ ЗАПИСИ СЕГОДНЯ (${todayB.length}) ═══
+${todayB.length
+  ? todayB.map(b => `${b.time_slot||'—'} | ${b.client_name||'Клиент'} | ${b.service_name||''} | ${b.client_phone||'нет тел.'}`).join('\n')
+  : 'Сегодня записей нет'}
+
+═══ ЗАПИСИ ЗАВТРА (${tomorrowB.length}) ═══
+${tomorrowB.length
+  ? tomorrowB.map(b => `${b.time_slot||'—'} | ${b.client_name||'Клиент'} | ${b.service_name||''} | ${b.client_phone||'нет тел.'}`).join('\n')
+  : 'Завтра записей нет'}
+
+═══ СТАТИСТИКА ═══
+Выручка за 7 дней: $${weekRevenue}
+Всего записей: ${_bookings.length}
+Популярная услуга: ${serviceTop?.name || 'нет данных'}
+
+═══ УСЛУГИ ═══
+${_services.slice(0,10).map(s=>`${s.name}: $${s.price||0}, ${s.duration||30} мин`).join('\n')}
+
+═══ КАК ОТВЕЧАТЬ ═══
+• На вопросы о записях — давай конкретные ответы с именами и временем
+• Когда просят напомнить клиенту — составь готовый текст сообщения и оформи его точно так:
+
+СООБЩЕНИЕ:
+[текст сообщения для клиента]
+
+• Советы по бизнесу — конкретные, применимые
+• Идеи для постов — готовые тексты с хэштегами
+• Отвечай кратко, избегай длинных списков без причины`;
+    }
+
+    async function askGemini(userMessage, history) {
+      const contents = [];
+      const prev = history.filter(m => m.role === 'user' || m.role === 'ai');
+      for (const m of prev.slice(-12)) {
+        if (m.role === 'user') contents.push({role:'user', parts:[{text:m.text}]});
+        else contents.push({role:'model', parts:[{text:m.text}]});
+      }
+      contents.push({role:'user', parts:[{text:userMessage}]});
+
+      const resp = await fetch(GEMINI_URL, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          system_instruction: {parts:[{text: buildSystemPrompt()}]},
+          contents,
+          generationConfig: {temperature:0.75, maxOutputTokens:700, topP:0.9}
+        })
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(()=>({}));
+        throw new Error(err.error?.message || `HTTP ${resp.status}`);
+      }
+      const data = await resp.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Не могу ответить.';
+    }
+
+    function renderBubble(m) {
+      let inner = '';
+      if (m.role === 'ai' && m.text.includes('СООБЩЕНИЕ:')) {
+        const idx = m.text.indexOf('СООБЩЕНИЕ:');
+        const before = m.text.slice(0, idx).trim();
+        const msgBody = m.text.slice(idx + 'СООБЩЕНИЕ:'.length).trim();
+        const escaped = msgBody.replace(/'/g,"\\'");
+        inner = (before ? `<div style="margin-bottom:10px;">${md(before)}</div>` : '') +
+          `<div style="background:rgba(124,58,237,.13);border:1px solid rgba(124,58,237,.28);border-radius:12px;padding:12px 14px;">
+            <div style="font-size:11px;font-weight:700;color:#9B5DFF;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Сообщение для клиента</div>
+            <div style="font-size:14px;line-height:1.65;white-space:pre-wrap;">${md(msgBody)}</div>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <button onclick="navigator.clipboard.writeText('${escaped}').then(()=>toast('Скопировано'))" style="flex:1;padding:8px;background:rgba(124,58,237,.22);border:none;border-radius:8px;color:#9B5DFF;font-size:13px;font-weight:600;cursor:pointer;">Скопировать</button>
+              <button onclick="if(navigator.share)navigator.share({text:'${escaped}'});else navigator.clipboard.writeText('${escaped}').then(()=>toast('Скопировано'))" style="flex:1;padding:8px;background:rgba(255,255,255,.07);border:none;border-radius:8px;color:var(--text-2);font-size:13px;cursor:pointer;">Поделиться</button>
+            </div>
+          </div>`;
+      } else {
+        inner = `<div style="white-space:pre-wrap;">${md(m.text)}</div>`;
+      }
+      return `<div>
+        <div class="chat-bubble ${m.role}">${inner}</div>
+        <div class="chat-meta ${m.role==='user'?'right':''}">${m.time}</div>
+      </div>`;
+    }
 
     (async () => {
       const auth = await requireAuth('master');
       if (!auth) return;
       _profile = auth.profile;
 
-      const { data: master } = await sb.from('masters').select('plan').eq('id', _profile.id).single();
-      const isPro = master?.plan === 'pro' || master?.plan === 'studio';
+      const [{ data: master }, { data: bookings }, { data: services }] = await Promise.all([
+        sb.from('masters').select('*').eq('id', _profile.id).single(),
+        sb.from('bookings').select('*').eq('master_id', _profile.id).neq('status','cancelled').order('date_iso',{ascending:false}).limit(60),
+        sb.from('services').select('*').eq('master_id', _profile.id),
+      ]);
+      _master = master;
+      _bookings = bookings || [];
+      _services = services || [];
 
-      if (isPro) {
-        document.getElementById('chat-ui').hidden = false;
-        const [{ data: bookings }, { data: services }] = await Promise.all([
-          sb.from('bookings').select('*').eq('master_id', _profile.id).neq('status','cancelled'),
-          sb.from('services').select('*').eq('master_id', _profile.id),
-        ]);
-        _bookings  = bookings  || [];
-        _services  = services  || [];
-        initChat();
-      } else {
-        document.getElementById('pro-gate').hidden = false;
-      }
+      initChat();
     })();
 
     function initChat() {
@@ -85,58 +200,93 @@
       const inputEl    = document.getElementById('chat-input');
       const sendBtn    = document.getElementById('send-btn');
 
-      function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-      function nowTime()  { return new Date().toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' }); }
-
       function renderMessages() {
-        messagesEl.innerHTML = history.map(m => `
-          <div>
-            <div class="chat-bubble ${m.role}">${escHtml(m.text)}</div>
-            <div class="chat-meta ${m.role==='user'?'right':''}">${m.time}</div>
-          </div>`).join('');
+        messagesEl.innerHTML = history.map(renderBubble).join('');
         messagesEl.scrollTop = messagesEl.scrollHeight;
       }
 
       if (!history.length) {
-        history.push({ role:'ai', text:`Привет, ${_profile.name||'мастер'}! 👋 Я ваш персональный ИИ-ассистент. Спрашивайте о записях, выручке или попросите бизнес-совет!`, time:nowTime() });
+        history.push({
+          role:'ai',
+          text:`Привет, ${_profile.name||'мастер'}! Я ваш ИИ-ассистент на базе Gemini.\n\nМогу рассказать о сегодняшних записях, составить напоминание клиенту, дать совет по бизнесу или написать пост для Instagram. Спрашивайте!`,
+          time: nowTime()
+        });
         localStorage.setItem(CHAT_KEY, JSON.stringify(history));
       }
       renderMessages();
 
-      function send(text) {
-        if (!text.trim()) return;
-        history.push({ role:'user', text:text.trim(), time:nowTime() });
+      let isSending = false;
+
+      async function send(text) {
+        if (!text.trim() || isSending) return;
+        isSending = true;
+        sendBtn.disabled = true;
+
+        const userMsg = {role:'user', text:text.trim(), time:nowTime()};
+        history.push(userMsg);
         localStorage.setItem(CHAT_KEY, JSON.stringify(history));
-        inputEl.value = ''; sendBtn.disabled = true;
+        inputEl.value = '';
+        inputEl.style.height = '';
         document.getElementById('suggestions').style.display = 'none';
         renderMessages();
 
         const typing = document.createElement('div');
-        typing.id = 'typing'; typing.className = 'chat-bubble ai typing';
+        typing.id = 'typing';
+        typing.className = 'chat-bubble ai typing';
         typing.innerHTML = '<span></span><span></span><span></span>';
-        messagesEl.appendChild(typing); messagesEl.scrollTop = messagesEl.scrollHeight;
+        messagesEl.appendChild(typing);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
 
-        setTimeout(() => {
+        try {
+          const reply = await askGemini(text.trim(), history);
           typing.remove();
-          const reply = mockAIResponse(text, _profile, _bookings, _services);
-          history.push({ role:'ai', text:reply, time:nowTime() });
+          history.push({role:'ai', text:reply, time:nowTime()});
           localStorage.setItem(CHAT_KEY, JSON.stringify(history));
           renderMessages();
-        }, 600 + Math.random() * 800);
+        } catch(e) {
+          typing.remove();
+          history.push({role:'ai', text:`⚠️ Ошибка: ${e.message}. Проверьте соединение и попробуйте снова.`, time:nowTime()});
+          localStorage.setItem(CHAT_KEY, JSON.stringify(history));
+          renderMessages();
+        } finally {
+          isSending = false;
+          sendBtn.disabled = !inputEl.value.trim();
+        }
       }
 
-      function autoResize() { inputEl.style.height='auto'; inputEl.style.height=Math.min(inputEl.scrollHeight,100)+'px'; }
-      inputEl.addEventListener('input', () => { sendBtn.disabled=!inputEl.value.trim(); autoResize(); });
-      inputEl.addEventListener('keydown', e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(!sendBtn.disabled)send(inputEl.value);} });
+      function autoResize() {
+        inputEl.style.height = 'auto';
+        inputEl.style.height = Math.min(inputEl.scrollHeight, 100) + 'px';
+      }
+
+      inputEl.addEventListener('input', () => {
+        sendBtn.disabled = !inputEl.value.trim();
+        autoResize();
+      });
+      inputEl.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          if (!sendBtn.disabled) send(inputEl.value);
+        }
+      });
       sendBtn.addEventListener('click', () => send(inputEl.value));
-      document.querySelectorAll('.chat-suggestion-chip').forEach(c => c.addEventListener('click', () => send(c.textContent)));
+      document.querySelectorAll('.chat-suggestion-chip').forEach(c =>
+        c.addEventListener('click', () => send(c.textContent))
+      );
 
       document.getElementById('clear-btn').addEventListener('click', () => {
-        openSheet(`<h3>Очистить чат?</h3><p class="muted" style="font-size:14px;margin:0 0 16px;">История переписки будет удалена.</p>
-          <div class="btn-row"><button class="btn btn-secondary" onclick="closeSheet()">Отмена</button><button class="btn btn-danger" id="cc">Очистить</button></div>`);
+        openSheet(`<h3>Очистить чат?</h3>
+          <p class="muted" style="font-size:14px;margin:0 0 16px;">История переписки будет удалена.</p>
+          <div class="btn-row">
+            <button class="btn btn-secondary" onclick="closeSheet()">Отмена</button>
+            <button class="btn btn-danger" id="cc">Очистить</button>
+          </div>`);
         document.getElementById('cc').addEventListener('click', () => {
-          history = []; localStorage.setItem(CHAT_KEY, '[]');
-          renderMessages(); document.getElementById('suggestions').style.display='flex'; closeSheet();
+          history = [];
+          localStorage.setItem(CHAT_KEY, '[]');
+          document.getElementById('suggestions').style.display = 'flex';
+          renderMessages();
+          closeSheet();
         });
       });
     }
