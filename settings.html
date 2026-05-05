@@ -13,7 +13,7 @@
 <body>
 <div class="app">
   <header class="topbar">
-    <a class="icon-btn-circle" href="javascript:history.back()" aria-label="Назад" style="display:inline-flex;align-items:center;justify-content:center;">
+    <a class="icon-btn-circle" onclick="history.length > 1 ? history.back() : location.href='/profile'" href="#" aria-label="Назад" style="display:inline-flex;align-items:center;justify-content:center;">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
     </a>
     <h1>Настройки</h1>
@@ -34,6 +34,19 @@
 
   <!-- Settings groups -->
   <div style="padding:0 20px;">
+
+    <!-- Subscription -->
+    <p class="settings-group-label">Подписка</p>
+    <div class="settings-group">
+      <a class="settings-row" href="/subscription">
+        <div class="settings-icon" style="background:linear-gradient(135deg,#7C3AED,#EC4899);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div class="settings-label">Моя подписка</div>
+        <span id="settings-plan-badge" style="font-size:12px;font-weight:600;padding:2px 10px;border-radius:100px;background:rgba(124,58,237,.15);color:#9B5DFF;margin-right:4px;">Free</span>
+        <svg class="settings-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </a>
+    </div>
 
     <!-- Account -->
     <p class="settings-group-label">Аккаунт</p>
@@ -231,6 +244,12 @@
   } else {
     av.textContent = (profile.name||'?').charAt(0).toUpperCase();
   }
+
+  // Show plan in subscription row
+  const { data: mData } = await sb.from('masters').select('plan').eq('id', profile.id).single();
+  const planNames = { trial:'Trial', free:'Free', pro:'Pro', studio:'Studio' };
+  const planBadge = document.getElementById('settings-plan-badge');
+  if (planBadge && mData) planBadge.textContent = planNames[mData.plan] || 'Free';
 
   // Face ID toggle
   const faceToggle = document.getElementById('faceid-toggle');
