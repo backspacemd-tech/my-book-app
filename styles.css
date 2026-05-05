@@ -629,13 +629,14 @@ body.page-exit .auth-wrap {
   position: fixed;
   bottom: 0;
   left: 0; right: 0;
-  z-index: 30;
+  z-index: 999; /* always on top of everything */
   display: flex;
   justify-content: center;
   pointer-events: none;
   padding-bottom: var(--safe-bottom);
   background: var(--bg);
-  /* Force GPU layer so iOS PWA doesn't scroll it away */
+  /* Isolate from any parent transform/opacity changes */
+  isolation: isolate;
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   will-change: transform;
