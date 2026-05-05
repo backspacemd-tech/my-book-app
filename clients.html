@@ -198,6 +198,7 @@ function plural(n, one, few, many) {
   const auth = await requireAuth('master');
   if (!auth) return;
   _masterId = auth.profile.id;
+  renderMasterTabBar('clients'); // immediately — don't wait for data
 
   document.getElementById('search').addEventListener('input', e => {
     _query = e.target.value; render();
@@ -211,7 +212,6 @@ function plural(n, one, few, many) {
   });
 
   await load();
-  renderMasterTabBar('clients');
 })();
 </script>
 </body>

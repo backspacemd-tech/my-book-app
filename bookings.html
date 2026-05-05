@@ -110,6 +110,7 @@
       const auth = await requireAuth('master');
       if (!auth) return;
       _masterId = auth.profile.id;
+      renderMasterTabBar('bookings'); // immediately — don't wait for data
       document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', () => {
           document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -120,7 +121,6 @@
       await load();
       // Realtime
       sb.channel('bookings-list').on('postgres_changes', { event:'*', schema:'public', table:'bookings', filter:`master_id=eq.${_masterId}` }, load).subscribe();
-      renderMasterTabBar('bookings');
     })();
   </script>
 </body>

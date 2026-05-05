@@ -137,9 +137,9 @@
       const auth = await requireAuth('master');
       if (!auth) return;
       _masterId = auth.profile.id;
+      renderMasterTabBar('services'); // immediately — don't wait for data
       document.getElementById('add-btn').addEventListener('click', () => openForm());
       await load();
-      renderMasterTabBar('services');
     })();
   </script>
 </body>

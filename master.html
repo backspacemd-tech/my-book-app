@@ -115,6 +115,9 @@
       if (!auth) return;
       const { session, profile } = auth;
 
+      // Nav — immediately on auth (never wait for data)
+      renderMasterTabBar('home');
+
       // Greeting
       const hr = new Date().getHours();
       document.getElementById('greet').textContent = hr < 5 ? 'Доброй ночи' : hr < 12 ? 'Доброе утро' : hr < 18 ? 'Добрый день' : 'Добрый вечер';
