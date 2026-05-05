@@ -906,8 +906,12 @@ section{padding:100px 0;}
 const panel   = document.getElementById('mob-panel');
 const overlay = document.getElementById('mob-overlay');
 document.getElementById('mob-menu-btn').onclick = () => {
-  panel.classList.add('open'); overlay.classList.add('open');
-  document.body.style.overflow = 'hidden';
+  if(panel.classList.contains('open')) {
+    closeMob();
+  } else {
+    panel.classList.add('open'); overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
 };
 function closeMob() {
   panel.classList.remove('open'); overlay.classList.remove('open');
@@ -943,6 +947,15 @@ function animateStats() {
 const sg = document.querySelector('.stats-grid');
 if(sg) new IntersectionObserver(es=>{ if(es[0].isIntersecting){animateStats();} },{threshold:.5}).observe(sg);
 
+/* ── video autoplay — force play on iOS/mobile ── */
+document.querySelectorAll('video[autoplay]').forEach(v => {
+  v.muted = true;
+  const tryPlay = () => v.play().catch(() => {});
+  tryPlay();
+  document.addEventListener('touchstart', tryPlay, { once:true });
+  document.addEventListener('touchend',   tryPlay, { once:true });
+});
+
 /* ── PWA banner — mobile browser only ── */
 (function(){
   const isMobile = () => window.innerWidth < 769;
@@ -951,31 +964,34 @@ if(sg) new IntersectionObserver(es=>{ if(es[0].isIntersecting){animateStats();} 
 
   if(!isMobile() || isPWA) return;
   if(localStorage.getItem('bm_pwa_ok')) return;
+  if(sessionStorage.getItem('bm_pwa_skip')) return;
 
   const banner = document.getElementById('pwa-banner');
   const howto  = document.getElementById('pwa-howto');
 
-  function hideBanner() {
+  /* "Не сейчас" / × — скрыть до следующего визита */
+  function dismissTemp() {
     banner.classList.remove('show');
+    sessionStorage.setItem('bm_pwa_skip','1');
+  }
+  /* "Понятно" — скрыть навсегда */
+  function dismissPermanent() {
+    howto.hidden = true;
     localStorage.setItem('bm_pwa_ok','1');
   }
   function showHowto() {
     banner.classList.remove('show');
     howto.hidden = false;
   }
-  function closeHowto() {
-    howto.hidden = true;
-    localStorage.setItem('bm_pwa_ok','1');
-  }
 
   setTimeout(() => { if(isMobile()) banner.classList.add('show'); }, 1800);
 
-  document.getElementById('pwa-x').onclick = hideBanner;
-  document.getElementById('pwa-later').onclick = hideBanner;
-  document.getElementById('pwa-how').onclick = showHowto;
-  document.getElementById('pwa-howto-close').onclick = closeHowto;
-  document.getElementById('pwa-ok').onclick = closeHowto;
-  howto.addEventListener('click', e => { if(e.target === howto) closeHowto(); });
+  document.getElementById('pwa-x').onclick     = dismissTemp;
+  document.getElementById('pwa-later').onclick  = dismissTemp;
+  document.getElementById('pwa-how').onclick    = showHowto;
+  document.getElementById('pwa-howto-close').onclick = dismissPermanent;
+  document.getElementById('pwa-ok').onclick     = dismissPermanent;
+  howto.addEventListener('click', e => { if(e.target === howto) dismissPermanent(); });
 })();
 </script>
 </body>
