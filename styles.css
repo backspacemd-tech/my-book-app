@@ -629,17 +629,18 @@ body.page-exit .auth-wrap {
   position: fixed;
   bottom: 0;
   left: 0; right: 0;
-  z-index: 999; /* always on top of everything */
+  z-index: 999;
   display: flex;
   justify-content: center;
   pointer-events: none;
   padding-bottom: var(--safe-bottom);
   background: var(--bg);
-  /* Isolate from any parent transform/opacity changes */
   isolation: isolate;
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   will-change: transform;
+  /* Own view-transition group → never hidden by page slide animation */
+  view-transition-name: tabbar;
 }
 .tabbar-inner {
   pointer-events: auto;
@@ -2021,6 +2022,12 @@ body.page-exit .auth-wrap {
 }
 ::view-transition-new(root) {
   animation: 340ms var(--ease)    both vt-page-in;
+}
+/* Tabbar stays put — no animation during page transitions */
+::view-transition-old(tabbar),
+::view-transition-new(tabbar) {
+  animation: none;
+  mix-blend-mode: normal;
 }
 
 /* ── Staggered list items ─────────────────────────────────── */
