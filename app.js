@@ -417,7 +417,48 @@ function _renderTabBar(tabs, activeKey, badgeMap) {
   let nav = document.querySelector('.tabbar');
   if (!nav) { nav = document.createElement('nav'); nav.className = 'tabbar'; document.body.appendChild(nav); }
   nav.innerHTML = html;
+
+  // ── Slide transition between tabs ──────────────────────────
+  const order = Object.fromEntries(tabs.map((t, i) => [t.key, i]));
+  nav.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', e => {
+      const destHref = a.getAttribute('href');
+      const destKey  = tabs.find(t => t.href === destHref)?.key;
+      if (!destKey || destKey === activeKey) return; // same tab – do nothing
+      e.preventDefault();
+      const dir = (order[destKey] ?? 0) > (order[activeKey] ?? 0) ? 'next' : 'prev';
+      sessionStorage.setItem('bm_slide', dir);
+      const app = document.querySelector('.app');
+      if (app) {
+        const tx = dir === 'next' ? '-40px' : '40px';
+        app.style.transition = 'transform .18s cubic-bezier(.4,0,.6,1), opacity .18s';
+        app.style.transform  = `translateX(${tx})`;
+        app.style.opacity    = '0';
+        setTimeout(() => { location.href = destHref; }, 180);
+      } else {
+        location.href = destHref;
+      }
+    });
+  });
 }
+
+// ── Slide-in animation on page load ──────────────────────────────
+(function slideIn() {
+  const dir = sessionStorage.getItem('bm_slide');
+  if (!dir) return;
+  sessionStorage.removeItem('bm_slide');
+  const app = document.querySelector('.app');
+  if (!app) return;
+  const startX = dir === 'next' ? '40px' : '-40px';
+  app.style.transform = `translateX(${startX})`;
+  app.style.opacity   = '0';
+  // Double rAF ensures style is applied before transition kicks in
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    app.style.transition = 'transform .22s cubic-bezier(.2,0,.2,1), opacity .22s';
+    app.style.transform  = 'translateX(0)';
+    app.style.opacity    = '1';
+  }));
+})();
 
 // ── Stats calculation (from Supabase bookings array) ─────────
 function calcStats(bookings) {
