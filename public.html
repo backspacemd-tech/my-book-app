@@ -27,11 +27,11 @@
       <p class="bio" id="description"></p>
       <div class="public-meta">
         <span class="badge rating" id="rating-badge" hidden>
-          <span class="star">★</span> <span id="rating-val">—</span>
+          <span class="star"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> <span id="rating-val">—</span>
           <span class="muted" style="margin-left:2px;">·</span>
           <span class="muted" id="rating-count">— отзывов</span>
         </span>
-        <span class="badge" id="online-badge">⚡ Онлайн-запись</span>
+        <span class="badge" id="online-badge" style="display:inline-flex;align-items:center;gap:5px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Онлайн-запись</span>
       </div>
     </header>
 
@@ -103,7 +103,7 @@
 
     if (!services.length) {
       list.innerHTML = `<div class="empty">
-        <div class="empty-icon">✦</div>
+        <div class="empty-icon" style="font-size:0;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
         <h4>Услуги не добавлены</h4>
         <p>Мастер пока не настроил прайс-лист</p>
       </div>`;
@@ -138,7 +138,7 @@
       document.getElementById('reviews-summary').textContent = `${user.rating?.toFixed(1) || ''} из 5`;
       document.getElementById('reviews').innerHTML = user.reviews.map((r) => `
         <div class="review-card">
-          <div class="stars">${'★'.repeat(r.stars)}</div>
+          <div class="stars">${Array.from({length:r.stars},()=>'<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>').join('')}</div>
           <p>«${r.text}»</p>
           <div class="who">${r.who}</div>
         </div>

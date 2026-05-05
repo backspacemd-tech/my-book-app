@@ -209,7 +209,7 @@ let _profile, _master;
     .select('id', { count: 'exact', head: true }).eq('master_id', _profile.id);
   document.getElementById('stat-bookings').textContent = bookingsCount || 0;
   if (_master.rating > 0) {
-    document.getElementById('stat-rating').textContent = _master.rating.toFixed(1) + '★';
+    document.getElementById('stat-rating').innerHTML = _master.rating.toFixed(1) + '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-left:2px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
   }
 
   // Link
@@ -231,7 +231,7 @@ let _profile, _master;
       if (!url) return;
       await sb.from('profiles').update({ avatar_url: url }).eq('id', _profile.id);
       avatarEl.style.backgroundImage = `url(${url})`; avatarEl.textContent = '';
-      toast('Фото обновлено', { icon: '✓' });
+      toast('Фото обновлено');
     } catch {}
   });
 
@@ -246,7 +246,7 @@ let _profile, _master;
       coverEl.style.backgroundImage = `url(${url})`;
       coverEl.style.backgroundSize = 'cover';
       document.getElementById('cover-label').style.display = 'none';
-      toast('Обложка обновлена', { icon: '✓' });
+      toast('Обложка обновлена');
     } catch {}
   });
 
@@ -301,7 +301,7 @@ let _profile, _master;
     }
     portfolioInput.value = '';
     await loadPortfolio();
-    toast('Фото добавлено', { icon: '✓' });
+    toast('Фото добавлено');
   });
 
   document.getElementById('add-photo-btn').addEventListener('click', () => portfolioInput.click());

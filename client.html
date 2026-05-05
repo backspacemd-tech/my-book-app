@@ -145,7 +145,7 @@
       if (_cityFilter)  query = query.ilike('city', `%${_cityFilter}%`);
       const { data, error } = await query.order('rating', { ascending: false }).limit(30);
       if (error) {
-        document.getElementById('masters-list').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><h4>Ошибка загрузки</h4><p>${error.message}</p><button class="btn btn-secondary btn-sm" style="margin-top:14px;" onclick="loadMasters()">Повторить</button></div>`;
+        document.getElementById('masters-list').innerHTML = `<div class="empty"><div class="empty-icon" style="font-size:0;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><h4>Ошибка загрузки</h4><p>${error.message}</p><button class="btn btn-secondary btn-sm" style="margin-top:14px;" onclick="loadMasters()">Повторить</button></div>`;
         return;
       }
       _allMasters = data || [];
@@ -166,7 +166,7 @@
       list.classList.remove('stagger'); void list.offsetWidth;
       list.innerHTML = filtered.map(m => {
         const name   = m.profiles?.name || 'Мастер';
-        const rating = m.rating > 0 ? `★ ${m.rating.toFixed(1)} · ${m.reviews_count} отзывов` : 'Нет отзывов';
+        const rating = m.rating > 0 ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> ${m.rating.toFixed(1)} · ${m.reviews_count} отзывов` : 'Нет отзывов';
         const specLabels = { beauty:'Бьюти', barber:'Барбер', trainer:'Тренер', nail:'Ногти', massage:'Массаж' };
         const specLabel = specLabels[m.specialty] || m.specialty || 'Мастер';
         const avatar = m.profiles?.avatar_url
@@ -281,7 +281,7 @@
         _profile.name = name;
         document.getElementById('cl-name').textContent  = name;
         document.getElementById('user-name').textContent = name || _profile.email;
-        toast('Сохранено', { icon:'✓' });
+        toast('Сохранено');
       });
       document.getElementById('logout-btn').addEventListener('click', signOut);
       document.getElementById('logout-profile-btn').addEventListener('click', signOut);
@@ -294,7 +294,7 @@
       document.getElementById('push-enable-btn').addEventListener('click', async () => {
         pushBanner.hidden = true;
         await setupPush(_profile.id);
-        if (Notification.permission === 'granted') toast('Уведомления включены', { icon: '✓' });
+        if (Notification.permission === 'granted') toast('Уведомления включены');
       });
 
       // Search

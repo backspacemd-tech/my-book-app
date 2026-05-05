@@ -16,7 +16,7 @@
 <body>
   <div class="app no-nav">
     <header class="topbar">
-      <a class="icon-btn-circle" href="/master" aria-label="Назад">←</a>
+      <a class="icon-btn-circle" href="/master" aria-label="Назад" style="display:inline-flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></a>
       <h1>Аналитика</h1>
       <span class="right-spacer"></span>
     </header>
@@ -109,7 +109,7 @@
       });
       const topSvcs = Object.entries(svcMap).sort((a,b) => b[1].revenue-a[1].revenue).slice(0,4);
       const topEl = document.getElementById('top-services');
-      if (!topSvcs.length) { topEl.innerHTML = `<div class="empty"><div class="empty-icon">✦</div><h4>Нет данных</h4></div>`; }
+      if (!topSvcs.length) { topEl.innerHTML = `<div class="empty"><div class="empty-icon" style="font-size:0;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 16 4-4 4 4 4-6"/></svg></div><h4>Нет данных</h4></div>`; }
       else {
         const maxR = topSvcs[0][1].revenue || 1;
         topEl.innerHTML = topSvcs.map(([name, s]) => `
@@ -122,7 +122,7 @@
 
       const sorted = [...filtered].sort((a,b) => a.date_iso > b.date_iso ? -1 : 1).slice(0,10);
       const pbEl = document.getElementById('period-bookings');
-      if (!sorted.length) { pbEl.innerHTML = `<div class="empty"><div class="empty-icon">📅</div><h4>Нет записей</h4></div>`; }
+      if (!sorted.length) { pbEl.innerHTML = `<div class="empty"><div class="empty-icon" style="font-size:0;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div><h4>Нет записей</h4></div>`; }
       else pbEl.innerHTML = sorted.map(b => {
         const status = isToday(b.date_iso) ? 'today' : isFuture(b.date_iso) ? 'upcoming' : 'past';
         const label  = { today:'сегодня', upcoming:'предстоит', past:'прошло' }[status];

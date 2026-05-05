@@ -139,7 +139,7 @@ let _profile, _master;
       btn.disabled = false; btn.textContent = 'Сохранить';
       return;
     }
-    toast('Профиль сохранён', { icon: '✓' });
+    toast('Профиль сохранён');
     setTimeout(() => location.href = '/profile', 600);
   });
 })();

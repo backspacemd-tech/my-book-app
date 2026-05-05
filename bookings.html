@@ -104,7 +104,7 @@
       `);
       document.getElementById('cancel-btn')?.addEventListener('click', async () => {
         await sb.from('bookings').update({ status:'cancelled' }).eq('id', id);
-        closeSheet(); toast('Запись отменена', { icon:'✓' }); await load();
+        closeSheet(); toast('Запись отменена'); await load();
       });
     }
 

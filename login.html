@@ -62,13 +62,13 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
           <label class="role-card" id="rc-master">
             <input type="radio" name="role" value="master" checked />
-            <div style="font-size:26px;margin-bottom:4px;">✂</div>
+            <div style="margin-bottom:4px;display:flex;align-items:center;justify-content:center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="m8.12 8.12 7.76 7.76M3.46 3.46l4.24 4.24m6.6 6.6 4.24 4.24"/></svg></div>
             <div style="font-size:14px;font-weight:700;">Мастер</div>
             <div style="font-size:12px;color:var(--text-2);">Принимаю клиентов</div>
           </label>
           <label class="role-card" id="rc-client">
             <input type="radio" name="role" value="client" />
-            <div style="font-size:26px;margin-bottom:4px;">👤</div>
+            <div style="margin-bottom:4px;display:flex;align-items:center;justify-content:center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6"/></svg></div>
             <div style="font-size:14px;font-weight:700;">Клиент</div>
             <div style="font-size:12px;color:var(--text-2);">Записываюсь онлайн</div>
           </label>
@@ -278,7 +278,7 @@
       // Auto-login after signup
       const { data: login, error: loginErr } = await sb.auth.signInWithPassword({ email, password: pwd });
       if (loginErr) {
-        toast('Аккаунт создан! Проверьте почту и подтвердите email.', { icon: '✓' });
+        toast('Аккаунт создан! Проверьте почту и подтвердите email.');
         btn.textContent = 'Создать аккаунт'; btn.disabled = false;
         return;
       }

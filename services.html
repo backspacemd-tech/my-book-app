@@ -115,7 +115,7 @@
         const payload = { name, description, price, duration, image_url };
         if (s) await sb.from('services').update(payload).eq('id', s.id);
         else   await sb.from('services').insert({ master_id: _masterId, ...payload });
-        closeSheet(); await load(); toast(s ? 'Сохранено' : 'Услуга добавлена', { icon:'✓' });
+        closeSheet(); await load(); toast(s ? 'Сохранено' : 'Услуга добавлена');
       });
       document.getElementById('s-del')?.addEventListener('click', async () => {
         await sb.from('services').delete().eq('id', s.id);
