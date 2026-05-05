@@ -96,8 +96,6 @@
         </div>
         <div class="btn-row mt-16">
           <a class="btn btn-secondary" href="tel:${b.client_phone.replace(/\s/g,'')}">Позвонить</a>
-          ${b.client_id ? `<a class="btn btn-secondary" href="/messages?master=${_masterId}&partner=${b.client_id}" style="display:inline-flex;gap:6px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Чат</a>` : ''}
         </div>
         <button class="btn btn-primary mt-8" onclick="closeSheet()">Закрыть</button>
         ${status !== 'past' ? `<button class="btn btn-danger mt-12" id="cancel-btn">Отменить запись</button>` : ''}

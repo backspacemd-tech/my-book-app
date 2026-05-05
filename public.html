@@ -35,6 +35,21 @@
       </div>
     </header>
 
+    <div id="social-links" style="display:flex;flex-wrap:wrap;gap:8px;padding:10px 20px 4px;" hidden></div>
+
+    <!-- Rating widget -->
+    <div id="rating-widget" style="padding:14px 20px;border-bottom:1px solid var(--border,rgba(255,255,255,.08));">
+      <div style="font-size:13px;color:var(--text-2,#888);margin-bottom:8px;">Оцените мастера</div>
+      <div id="stars-row" style="display:flex;gap:4px;">
+        <button class="star-btn" data-v="1" style="background:none;border:none;cursor:pointer;padding:2px;font-size:30px;line-height:1;color:#F59E0B;">☆</button>
+        <button class="star-btn" data-v="2" style="background:none;border:none;cursor:pointer;padding:2px;font-size:30px;line-height:1;color:#F59E0B;">☆</button>
+        <button class="star-btn" data-v="3" style="background:none;border:none;cursor:pointer;padding:2px;font-size:30px;line-height:1;color:#F59E0B;">☆</button>
+        <button class="star-btn" data-v="4" style="background:none;border:none;cursor:pointer;padding:2px;font-size:30px;line-height:1;color:#F59E0B;">☆</button>
+        <button class="star-btn" data-v="5" style="background:none;border:none;cursor:pointer;padding:2px;font-size:30px;line-height:1;color:#F59E0B;">☆</button>
+      </div>
+      <div id="rating-msg" style="font-size:13px;color:var(--text-2,#888);margin-top:6px;"></div>
+    </div>
+
     <!-- Услуги -->
     <section class="section" style="margin-top: 24px;">
       <div class="section-head">
@@ -80,6 +95,7 @@
     const username = params.get('u');
 
     const user = Store.get(STORAGE.USER);
+    window._masterId = user.id || null;
 
     document.getElementById('name').textContent = user.name || 'Мастер';
     document.getElementById('role').textContent = user.role || '';
@@ -153,6 +169,68 @@
       });
       window.location.href = `/booking?u=${encodeURIComponent(username || user.username)}&s=${selectedId}`;
     });
+
+    // Social links
+    const socialEl = document.getElementById('social-links');
+    if (socialEl && (user.instagram || user.telegram)) {
+      const links = [];
+      if (user.instagram) links.push(
+        `<a href="https://instagram.com/${user.instagram}" target="_blank" rel="noopener"
+          style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:100px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);font-size:13px;font-weight:500;color:var(--text,#F0F0F8);text-decoration:none;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          @${user.instagram}</a>`
+      );
+      if (user.telegram) links.push(
+        `<a href="https://t.me/${user.telegram}" target="_blank" rel="noopener"
+          style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:100px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);font-size:13px;font-weight:500;color:var(--text,#F0F0F8);text-decoration:none;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7z"/><path d="M22 2 11 13"/></svg>
+          @${user.telegram}</a>`
+      );
+      socialEl.innerHTML = links.join('');
+      socialEl.hidden = false;
+    }
+
+    // ── Rating widget ──
+    (function() {
+      const masterId = window._masterId || (typeof _masterId !== 'undefined' ? _masterId : null);
+      if (!masterId) return;
+      const VOTE_KEY = 'bm_voted_' + masterId;
+      const btns = document.querySelectorAll('.star-btn');
+      const ratingMsg = document.getElementById('rating-msg');
+      const starsRow = document.getElementById('stars-row');
+      if (!starsRow) return;
+
+      const voted = localStorage.getItem(VOTE_KEY);
+      if (voted) {
+        const n = parseInt(voted);
+        starsRow.innerHTML = '<span style="font-size:28px;color:#F59E0B;">' + '★'.repeat(n) + '<span style="opacity:.3;">' + '☆'.repeat(5-n) + '</span></span>';
+        if (ratingMsg) ratingMsg.textContent = 'Вы уже оценили. Спасибо!';
+        return;
+      }
+
+      btns.forEach(btn => {
+        btn.addEventListener('mouseenter', () => {
+          const v = parseInt(btn.dataset.v);
+          btns.forEach(b => b.textContent = parseInt(b.dataset.v) <= v ? '★' : '☆');
+        });
+        btn.addEventListener('mouseleave', () => btns.forEach(b => b.textContent = '☆'));
+        btn.addEventListener('click', async () => {
+          const stars = parseInt(btn.dataset.v);
+          starsRow.style.pointerEvents = 'none';
+          starsRow.innerHTML = '<span style="font-size:28px;color:#F59E0B;">' + '★'.repeat(stars) + '<span style="opacity:.3;">' + '☆'.repeat(5-stars) + '</span></span>';
+          if (ratingMsg) ratingMsg.textContent = 'Спасибо за оценку! ⭐';
+          localStorage.setItem(VOTE_KEY, stars);
+          try {
+            await sb.from('master_ratings').insert({ master_id: masterId, stars });
+            const { data: rows } = await sb.from('master_ratings').select('stars').eq('master_id', masterId);
+            if (rows?.length) {
+              const avg = Math.round(rows.reduce((s,r)=>s+r.stars,0) / rows.length * 10) / 10;
+              await sb.from('masters').update({ rating: avg }).eq('id', masterId);
+            }
+          } catch(e) { console.warn('Rating save failed:', e.message); }
+        });
+      });
+    })();
   </script>
 <!-- BookMe promo banner -->
 <div id="bookme-promo" style="position:fixed;bottom:0;left:0;right:0;z-index:100;background:#000;border-top:1px solid rgba(255,255,255,.08);padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:12px;">
