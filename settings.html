@@ -349,6 +349,18 @@ function showPrivacySheet() {
     <button class="btn btn-primary" id="priv-save">Сохранить</button>
     <button class="btn btn-secondary mt-8" onclick="closeSheet()">Отмена</button>
   `);
+  (async () => {
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) return;
+    const toggle = document.getElementById('priv-online');
+    const { data: m } = await sb.from('masters').select('accepts_online').eq('id', user.id).maybeSingle();
+    if (m && toggle) toggle.checked = !!m.accepts_online;
+    document.getElementById('priv-save')?.addEventListener('click', async () => {
+      const { error } = await sb.from('masters').update({ accepts_online: !!toggle?.checked }).eq('id', user.id);
+      if (error) { toast('Ошибка: ' + error.message); return; }
+      closeSheet(); toast('Сохранено', { icon: '✓' });
+    });
+  })();
 }
 </script>
 </body>

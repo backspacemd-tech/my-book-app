@@ -203,6 +203,11 @@ async function shareLink(url, title) {
   if (navigator.share) { try { await navigator.share({ title, url }); return true; } catch {} }
   return false;
 }
+// Share arbitrary text, falling back to clipboard (with toast) when share is unavailable.
+async function shareText(text) {
+  if (navigator.share) { try { await navigator.share({ text }); return; } catch {} }
+  await copyToClipboard(text);
+}
 
 // ── Public URL helpers ───────────────────────────────────────
 function getPublicUrl(username) {
