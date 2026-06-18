@@ -68,6 +68,11 @@
         <div class="section-head"><h3>Мастера</h3><span class="muted" style="font-size:13px;" id="masters-count"></span></div>
         <div class="list" id="masters-list"></div>
       </section>
+
+      <section class="section" data-news-section hidden>
+        <div class="section-head"><h3>Новости BookMe</h3></div>
+        <div id="news-feed-client"></div>
+      </section>
     </div>
 
     <!-- My bookings view -->
@@ -272,7 +277,8 @@
 
       document.getElementById('save-profile-btn').addEventListener('click', async () => {
         const name = document.getElementById('cl-name-input').value.trim();
-        await sb.from('profiles').update({ name }).eq('id', _profile.id);
+        const { error } = await sb.from('profiles').update({ name }).eq('id', _profile.id);
+        if (error) { toast('Ошибка: ' + error.message); return; }
         _profile.name = name;
         document.getElementById('cl-name').textContent  = name;
         document.getElementById('user-name').textContent = name || _profile.email;
@@ -323,6 +329,9 @@
       });
 
       await loadMasters();
+
+      // Admin-published news
+      mountNews('news-feed-client');
 
       // Render tab bar with routing
       _renderTabBar([

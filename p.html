@@ -132,6 +132,7 @@
 
       const profile = master.profiles;
       window._masterId = master.id;
+      initRating(master.id);
 
       // Render header
       document.title = `BookMe — ${profile?.name || 'Мастер'}`;
@@ -270,8 +271,7 @@
     })();
 
     // ── Rating widget ──
-    (function() {
-      const masterId = window._masterId || (typeof _masterId !== 'undefined' ? _masterId : null);
+    function initRating(masterId) {
       if (!masterId) return;
       const VOTE_KEY = 'bm_voted_' + masterId;
       const btns = document.querySelectorAll('.star-btn');
@@ -309,7 +309,7 @@
           } catch(e) { console.warn('Rating save failed:', e.message); }
         });
       });
-    })();
+    }
   </script>
 <!-- BookMe promo banner -->
 <div id="bookme-promo" style="position:fixed;bottom:0;left:0;right:0;z-index:100;background:#000;border-top:1px solid rgba(255,255,255,.08);padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:12px;">

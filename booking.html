@@ -289,7 +289,7 @@
         const end   = new Date(start.getTime() + (service.duration * 60000));
         const fmtD  = d => d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
         const ics = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//BookMe//RU','BEGIN:VEVENT',
-          `UID:${lastBooking.id}@bookme.app`,`DTSTAMP:${fmtD(new Date())}`,
+          `UID:${lastBooking.id}@bookme-app.online`,`DTSTAMP:${fmtD(new Date())}`,
           `DTSTART:${fmtD(start)}`,`DTEND:${fmtD(end)}`,
           `SUMMARY:${service.name} — ${master.profiles?.name||'Мастер'}`,
           `DESCRIPTION:${lastBooking.client_name || ''}, ${lastBooking.client_phone || ''}`,

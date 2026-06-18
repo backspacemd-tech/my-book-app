@@ -20,7 +20,7 @@
            style="width:64px;height:64px;border-radius:16px;margin-bottom:8px;"
            onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='flex'" />
       <div id="logo-fallback" class="auth-logo" style="display:none;margin-bottom:14px;">BM</div>
-      <p class="muted" style="text-align:center;font-size:14px;margin:0;">Онлайн-запись для мастеров и клиентов</p>
+      <p class="muted" id="login-tagline" style="text-align:center;font-size:14px;margin:0;">Онлайн-запись для мастеров и клиентов</p>
     </div>
 
     <div class="auth-tabs">
@@ -105,7 +105,7 @@
         </button>
       </div>
       <p class="auth-footer" style="font-size:12px;color:var(--text-3);text-align:center;margin-top:16px;">
-        Первый зарегистрированный пользователь получает права администратора.
+        Администратор назначается вручную владельцем проекта.
       </p>
     </div>
 
@@ -172,6 +172,13 @@
         || await ensureProfile(session.user, { email: session.user.email, name: session.user.user_metadata?.name || undefined });
       if (profile) redirectByRole(profile.role);
     })();
+
+    // Reflect admin-edited platform name / tagline (best-effort, non-blocking)
+    loadAppSettings().then(s => {
+      if (!s) return;
+      if (s.tagline)  document.getElementById('login-tagline').textContent = s.tagline;
+      if (s.app_name) document.title = s.app_name + ' — онлайн-запись';
+    });
 
     // Tab switching
     ['login','reg'].forEach(t => {

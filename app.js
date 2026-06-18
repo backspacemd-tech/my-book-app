@@ -59,16 +59,6 @@ async function getProfile(userId) {
   return data;
 }
 
-async function getMasterRecord(userId) {
-  const { data } = await sb.from('masters').select('*').eq('id', userId).single();
-  return data;
-}
-
-async function isFirstProfile() {
-  const { count } = await sb.from('profiles').select('id', { count: 'exact', head: true });
-  return !count;
-}
-
 async function ensureMasterRecord(user, attrs = {}) {
   const { data: master } = await sb.from('masters').select('*').eq('id', user.id).single();
   if (master) return master;
@@ -92,8 +82,8 @@ async function ensureProfile(user, attrs = {}) {
   if (profile) return profile;
 
   const specialty = attrs.specialty || user.user_metadata?.specialty || user.app_metadata?.specialty || null;
-  const isFirst = await isFirstProfile();
-  const role = isFirst ? 'admin' : (attrs.role || user.user_metadata?.role || user.app_metadata?.role || 'client');
+  const requestedRole = attrs.role || user.user_metadata?.role || user.app_metadata?.role || 'client';
+  const role = requestedRole === 'admin' ? 'client' : requestedRole;
   const email = attrs.email || user.email || '';
   const name = attrs.name || user.user_metadata?.name || user.user_metadata?.full_name || email.split('@')[0] || '';
 
@@ -322,7 +312,7 @@ async function setupPush(userId) {
 
 async function sendPush(userId, { title, body, url = '/' } = {}) {
   try {
-    await fetch('https://bxuiggebgnxewmjwkbqa.supabase.co/functions/v1/send-push', {
+    await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: userId, title, body, url }),
@@ -404,9 +394,6 @@ function renderAdminTabBar(activeKey, badgeMap = {}) {
     { key: 'settings', label: 'Настройки',href: '/admin#settings', icon: Icons.admin },
   ], activeKey, badgeMap);
 }
-
-// Legacy alias for pages that still call renderTabBar()
-function renderTabBar(activeKey, badgeMap = {}) { renderMasterTabBar(activeKey, badgeMap); }
 
 function _renderTabBar(tabs, activeKey, badgeMap) {
   const html = `<div class="tabbar-inner">${tabs.map(t => `
@@ -495,39 +482,6 @@ function calcAnalytics(bookings, period) {
   const totalRevenue = revenue.reduce((s,x) => s+x, 0);
   const totalCount   = counts.reduce((s,x) => s+x, 0);
   return { labels, revenue, counts, totalRevenue, totalCount, avgCheck: totalCount ? Math.round(totalRevenue/totalCount) : 0 };
-}
-
-// ── Mock AI response ─────────────────────────────────────────
-function mockAIResponse(message, profile, bookings, services = []) {
-  const msg = message.toLowerCase().trim();
-  const stats = calcStats(bookings);
-  if (/привет|здравств|hi\b|hello/.test(msg))
-    return `Привет, ${profile.name || 'мастер'}! Я ваш ИИ-ассистент. Спросите о записях, выручке или попросите бизнес-совет.`;
-  if (/записей|клиент|запись/.test(msg))
-    return `Предстоящих записей: ${stats.upcomingCount}, сегодня: ${stats.todayCount}. Выручка за 7 дней: ${fmt$(stats.revenue7)}.`;
-  if (/выручк|доход|деньг/.test(msg)) {
-    const avg = bookings.length ? Math.round(bookings.reduce((s,b) => s+b.service_price,0)/bookings.length) : 0;
-    return `За 7 дней: ${fmt$(stats.revenue7)}. Всего записей: ${bookings.length}. Средний чек: ${fmt$(avg)}.`;
-  }
-  if (/услуг|прайс|цен/.test(msg)) {
-    if (!services.length) return 'У вас пока нет услуг в прайсе. Добавьте в разделе «Услуги».';
-    const sorted = [...services].sort((a,b) => b.price-a.price);
-    return `Самая дорогая: «${sorted[0].name}» (${fmt$(sorted[0].price)}). Услуг всего: ${services.length}.`;
-  }
-  if (/совет|рекоменд|как/.test(msg)) {
-    const tips = [
-      'Добавьте услугу «Экспресс» — привлекает клиентов с ограниченным временем.',
-      'Поделитесь ссылкой в Stories — быстрый способ получить новые записи.',
-      'Скидка 10% на первый визит увеличивает конверсию на 35%.',
-      'Попросите постоянных клиентов оставить отзыв — рейтинг поднимет позиции.',
-    ];
-    return tips[Math.floor(Math.random()*tips.length)];
-  }
-  const fb = [
-    `У вас ${services.length} услуг и ${stats.upcomingCount} предстоящих записей. Спросите подробнее!`,
-    'Спросите о записях, выручке, услугах или попросите бизнес-совет.',
-  ];
-  return fb[Math.floor(Math.random()*fb.length)];
 }
 
 // ── Face ID / Passkeys (WebAuthn) ────────────────────────────
@@ -639,39 +593,47 @@ function debounce(fn, ms = 300) {
   return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), ms); };
 }
 
-// ── In-memory cache with TTL ──────────────────────────────────
-const _cache = new Map();
-function getCached(key, fetcher, ttl = 30_000) {
-  const hit = _cache.get(key);
-  if (hit && Date.now() - hit.ts < ttl) return Promise.resolve(hit.data);
-  return fetcher().then(data => { _cache.set(key, { data, ts: Date.now() }); return data; });
+// ── HTML escaping (prevent injection when rendering DB content) ─
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => (
+    { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]
+  ));
 }
-function invalidateCache(...keys) { keys.forEach(k => _cache.delete(k)); }
 
-// ── localStorage cache (survives page navigation) ─────────────
-// ttl default: 5 minutes. Max stored keys: avoid filling localStorage.
-function getCachedLocal(key, fetcher, ttl = 5 * 60_000) {
-  const lsKey = 'bm_' + key;
-  try {
-    const raw = localStorage.getItem(lsKey);
-    if (raw) {
-      const { data, ts } = JSON.parse(raw);
-      if (Date.now() - ts < ttl) {
-        // Stale-while-revalidate: return cache immediately, refresh in background
-        fetcher().then(fresh => {
-          try { localStorage.setItem(lsKey, JSON.stringify({ data: fresh, ts: Date.now() })); } catch {}
-        }).catch(() => {});
-        return Promise.resolve(data);
-      }
-    }
-  } catch {}
-  return fetcher().then(data => {
-    try { localStorage.setItem(lsKey, JSON.stringify({ data, ts: Date.now() })); } catch {}
-    return data;
-  });
+// ── News feed (admin-published announcements) ─────────────────
+async function loadPublishedNews(limit = 10) {
+  const { data, error } = await sb.from('news')
+    .select('id, title, body, created_at')
+    .eq('published', true)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) { console.warn('[News] load failed:', error.message); return []; }
+  return data || [];
 }
-function invalidateCachedLocal(...keys) {
-  keys.forEach(k => { try { localStorage.removeItem('bm_' + k); } catch {} });
+
+// Mount published news into a container. The closest [data-news-section]
+// (or the container itself) is hidden when there is nothing to show.
+async function mountNews(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const section = el.closest('[data-news-section]') || el;
+  const items = await loadPublishedNews(10);
+  if (!items.length) { section.hidden = true; return; }
+  section.hidden = false;
+  el.innerHTML = items.map(n => `
+    <div class="news-card anim-fade-up">
+      <div class="news-card-meta">${fmtDate(new Date(n.created_at))}</div>
+      <div class="news-card-title">${escapeHtml(n.title)}</div>
+      ${n.body ? `<div class="news-card-body">${escapeHtml(n.body)}</div>` : ''}
+    </div>`).join('');
+}
+
+// ── App settings (admin-editable platform name / tagline) ─────
+async function loadAppSettings() {
+  try {
+    const { data } = await sb.from('app_settings').select('app_name, tagline').eq('id', 1).maybeSingle();
+    return data || null;
+  } catch { return null; }
 }
 
 // ── Skeleton helpers ──────────────────────────────────────────
@@ -827,4 +789,3 @@ async function uploadFile(bucket, path, file) {
   const { data: { publicUrl } } = sb.storage.from(bucket).getPublicUrl(path);
   return publicUrl;
 }
-

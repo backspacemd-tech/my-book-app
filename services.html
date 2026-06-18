@@ -108,17 +108,20 @@
 
         let image_url = s?.image_url || null;
         if (_pendingImageBlob) {
-          const path = `services/${_masterId}/${Date.now()}.jpg`;
+          const path = `${_masterId}/${Date.now()}.jpg`;
           const uploaded = await uploadFile('services', path, _pendingImageBlob);
           if (uploaded) image_url = uploaded;
         }
         const payload = { name, description, price, duration, image_url };
-        if (s) await sb.from('services').update(payload).eq('id', s.id);
-        else   await sb.from('services').insert({ master_id: _masterId, ...payload });
+        const { error } = s
+          ? await sb.from('services').update(payload).eq('id', s.id)
+          : await sb.from('services').insert({ master_id: _masterId, ...payload });
+        if (error) { toast('Ошибка: ' + error.message); return; }
         closeSheet(); await load(); toast(s ? 'Сохранено' : 'Услуга добавлена');
       });
       document.getElementById('s-del')?.addEventListener('click', async () => {
-        await sb.from('services').delete().eq('id', s.id);
+        const { error } = await sb.from('services').delete().eq('id', s.id);
+        if (error) { toast('Ошибка: ' + error.message); return; }
         closeSheet(); await load(); toast('Услуга удалена');
       });
     };

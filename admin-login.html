@@ -48,52 +48,15 @@
         ADMIN PANEL
       </div>
       <h1 style="font-size:24px;font-weight:700;letter-spacing:-0.02em;margin:0 0 4px;">BookMe</h1>
-      <p style="color:var(--text-2);font-size:14px;margin:0 0 28px;">Панель администратора</p>
+      <p style="color:var(--text-2);font-size:14px;margin:0 0 28px;">Вход только через аккаунт с ролью администратора</p>
 
-      <div class="field">
-        <label for="a-login">Логин</label>
-        <input id="a-login" type="text" placeholder="vasea" autocomplete="off"/>
-      </div>
-      <div class="field">
-        <label for="a-pass">Пароль</label>
-        <input id="a-pass" type="password" placeholder="••••••••"/>
-      </div>
-      <div id="a-error" style="color:var(--danger);font-size:13px;margin-bottom:12px;display:none;text-align:center;">
-        Неверный логин или пароль
-      </div>
-      <button class="btn btn-primary" id="a-btn">Войти</button>
+      <a class="btn btn-primary" href="/login">Войти через Supabase</a>
+      <a class="btn btn-secondary" href="/" style="margin-top:10px;">На главную</a>
     </div>
   </div>
 
   <script>
-    // Check if already logged in as admin
-    if (sessionStorage.getItem('bm_admin') === 'true') {
-      location.replace('/admin');
-    }
-
-    const ADMIN_LOGIN = 'vasea';
-    const ADMIN_PASS  = 'black2026';
-
-    function attempt() {
-      const login = document.getElementById('a-login').value.trim();
-      const pass  = document.getElementById('a-pass').value;
-      const err   = document.getElementById('a-error');
-      const btn   = document.getElementById('a-btn');
-      err.style.display = 'none';
-      if (login === ADMIN_LOGIN && pass === ADMIN_PASS) {
-        sessionStorage.setItem('bm_admin', 'true');
-        btn.textContent = 'Входим…'; btn.disabled = true;
-        setTimeout(() => location.replace('/admin'), 300);
-      } else {
-        err.style.display = 'block';
-        document.getElementById('a-pass').value = '';
-        document.getElementById('a-pass').focus();
-      }
-    }
-
-    document.getElementById('a-btn').addEventListener('click', attempt);
-    document.getElementById('a-pass').addEventListener('keydown', e => { if (e.key === 'Enter') attempt(); });
-    document.getElementById('a-login').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('a-pass').focus(); });
+    sessionStorage.removeItem('bm_admin');
   </script>
 </body>
 </html>

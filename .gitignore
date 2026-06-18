@@ -4,3 +4,5 @@
 *.tmp
 node_modules/
 *.swp
+skills-lock.json
+.agents/

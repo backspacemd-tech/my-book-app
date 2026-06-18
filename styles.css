@@ -2634,3 +2634,35 @@ canvas#crop-canvas:active { cursor: grabbing; }
   pointer-events: none;
 }
 .refresh-toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── News feed (admin-published announcements) ─────────────── */
+.news-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.news-card:last-child { margin-bottom: 0; }
+.news-card-meta {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3, #9CA3AF);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 6px;
+}
+.news-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  line-height: 1.3;
+}
+.news-card-body {
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.5;
+  margin-top: 4px;
+  white-space: pre-wrap;
+}

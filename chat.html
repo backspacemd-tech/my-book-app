@@ -48,8 +48,6 @@
   <script src="config.js"></script>
   <script src="app.js"></script>
   <script>
-    const GEMINI_KEY = 'AIzaSyCK5EYEHZA4ClnID8jLIkK12B7WNy7BFWs';
-    const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_KEY}`;
     const CHAT_KEY = 'bookme_chat_v3';
     let _profile, _bookings = [], _services = [], _master = null;
 
@@ -72,7 +70,7 @@
       const today = todayISO();
       const todayB = _bookings
         .filter(b => b.date_iso === today)
-        .sort((a,b) => (a.time_slot||'').localeCompare(b.time_slot||''));
+        .sort((a,b) => (a.time_slot||'').localeCompare(b.time||''));
 
       const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
       const tomorrowISO = tomorrow.toISOString().slice(0,10);
@@ -85,7 +83,7 @@
         })
         .reduce((s,b) => s+(b.service_price||0), 0);
 
-      const serviceTop = _services.sort((a,b) => (b.booking_count||0)-(a.booking_count||0))[0];
+      const serviceTop = _services[0];
 
       return `Ты — персональный ИИ-ассистент мастера в приложении BookMe. Общайся на русском языке, дружелюбно и по делу.
 
@@ -97,12 +95,12 @@
 
 ═══ ЗАПИСИ СЕГОДНЯ (${todayB.length}) ═══
 ${todayB.length
-  ? todayB.map(b => `${b.time_slot||'—'} | ${b.client_name||'Клиент'} | ${b.service_name||''} | ${b.client_phone||'нет тел.'}`).join('\n')
+  ? todayB.map(b => `${b.time||'—'} | ${b.client_name||'Клиент'} | ${b.service_name||''} | ${b.client_phone||'нет тел.'}`).join('\n')
   : 'Сегодня записей нет'}
 
 ═══ ЗАПИСИ ЗАВТРА (${tomorrowB.length}) ═══
 ${tomorrowB.length
-  ? tomorrowB.map(b => `${b.time_slot||'—'} | ${b.client_name||'Клиент'} | ${b.service_name||''} | ${b.client_phone||'нет тел.'}`).join('\n')
+  ? tomorrowB.map(b => `${b.time||'—'} | ${b.client_name||'Клиент'} | ${b.service_name||''} | ${b.client_phone||'нет тел.'}`).join('\n')
   : 'Завтра записей нет'}
 
 ═══ СТАТИСТИКА ═══
@@ -134,22 +132,25 @@ ${_services.slice(0,10).map(s=>`${s.name}: $${s.price||0}, ${s.duration||30} м�
       }
       contents.push({role:'user', parts:[{text:userMessage}]});
 
-      const resp = await fetch(GEMINI_URL, {
+      const session = await getSession();
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/ai-assistant`, {
         method:'POST',
-        headers:{'Content-Type':'application/json'},
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization': `Bearer ${session?.access_token || SUPABASE_ANON}`,
+        },
         body: JSON.stringify({
-          system_instruction: {parts:[{text: buildSystemPrompt()}]},
+          systemPrompt: buildSystemPrompt(),
           contents,
-          generationConfig: {temperature:0.75, maxOutputTokens:700, topP:0.9}
         })
       });
 
       if (!resp.ok) {
         const err = await resp.json().catch(()=>({}));
-        throw new Error(err.error?.message || `HTTP ${resp.status}`);
+        throw new Error(err.error || err.error?.message || `HTTP ${resp.status}`);
       }
       const data = await resp.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Не могу ответить.';
+      return data.text?.trim() || 'Не могу ответить.';
     }
 
     function renderBubble(m) {

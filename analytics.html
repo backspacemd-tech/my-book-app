@@ -149,10 +149,14 @@
       const { data } = await sb.from('bookings').select('*').eq('master_id', _masterId).neq('status','cancelled');
       _bookings = data || [];
 
-      document.getElementById('expenses-input').addEventListener('input', async e => {
+      const saveExpenses = debounce(async () => {
+        const { error } = await sb.from('masters').update({ expenses: _expenses }).eq('id', _masterId);
+        if (error) toast('Не удалось сохранить расходы');
+      }, 600);
+      document.getElementById('expenses-input').addEventListener('input', e => {
         _expenses = parseInt(e.target.value) || 0;
-        await sb.from('masters').update({ expenses: _expenses }).eq('id', _masterId);
         updateProfit();
+        saveExpenses();
       });
 
       document.querySelectorAll('.tab').forEach(tab => {

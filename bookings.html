@@ -101,8 +101,7 @@
         ${status !== 'past' ? `<button class="btn btn-danger mt-12" id="cancel-btn">Отменить запись</button>` : ''}
       `);
       document.getElementById('cancel-btn')?.addEventListener('click', async () => {
-        await sb.from('bookings').update({ status:'cancelled' }).eq('id', id);
-        closeSheet(); toast('Запись отменена'); await load();
+        await cancelBooking(id, { onDone: async () => { closeSheet(); await load(); } });
       });
     }
 

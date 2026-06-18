@@ -1,8 +1,14 @@
 /* ============================================================
    BookMe — Supabase client (loaded before app.js on every page)
+
+   ▼▼▼ ЕДИНСТВЕННОЕ МЕСТО ПРИВЯЗКИ К SUPABASE ▼▼▼
+   Чтобы переключить приложение на новый проект — замените
+   ТОЛЬКО эти две строки значениями из нового проекта:
+     Supabase → Settings → API → Project URL  и  anon public key.
+   Больше нигде в коде проект не зашит.
    ============================================================ */
-const SUPABASE_URL  = 'https://bxuiggebgnxewmjwkbqa.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ4dWlnZ2ViZ254ZXdtandrYnFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjYxMTAsImV4cCI6MjA5MzA0MjExMH0.SmAPq3glvy43k7y6OsiD7Os3JOE9nKtoROmOHMytfC0';
+const SUPABASE_URL  = 'https://haacqhhqsasscqkkcofa.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_TnJWz_CrwilYHufl_3gRqw_TC7FRKp_';
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
   auth: {

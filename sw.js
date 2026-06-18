@@ -1,5 +1,5 @@
-/* BookMe — service worker v13 */
-const CACHE = 'bookme-v13';
+/* BookMe — service worker v17 */
+const CACHE = 'bookme-v17';
 
 // Only static assets get cached — never HTML pages
 const STATIC = [
