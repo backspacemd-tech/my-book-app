@@ -162,10 +162,15 @@
             <div class="flex-between" style="padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;"><span class="muted">${k}</span><span style="font-weight:600;">${v}</span></div>
           `).join('').replace(/border-bottom:1px solid var\(--border\);">\s*$/, '">') /* remove last border */}
         </div>
-        <h4 style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px;">Изменить роль</h4>
-        <div class="btn-row" style="flex-wrap:wrap;gap:8px;margin-bottom:14px;">
-          ${['admin','master','client'].map(r => `<button class="btn btn-secondary btn-sm" data-role="${r}" style="flex:none;${user.role===r?'border-color:var(--text);font-weight:700;':''}">${roleLabels[r]}</button>`).join('')}
-        </div>
+        ${user.id === _profile.id ? `
+          <h4 style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px;">Ваша роль</h4>
+          <p class="muted" style="font-size:13px;line-height:1.5;margin:0 0 14px;">Это ваш аккаунт (Администратор). Чтобы не потерять доступ к админ-панели, свою роль здесь изменить нельзя.</p>
+        ` : `
+          <h4 style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px;">Изменить роль</h4>
+          <div class="btn-row" style="flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+            ${['admin','master','client'].map(r => `<button class="btn btn-secondary btn-sm" data-role="${r}" style="flex:none;${user.role===r?'border-color:var(--text);font-weight:700;':''}">${roleLabels[r]}</button>`).join('')}
+          </div>
+        `}
         ${user.role === 'master' ? `
           <h4 style="font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px;">Изменить тариф</h4>
           <div class="btn-row" style="flex-wrap:wrap;gap:8px;margin-bottom:14px;">
